@@ -1,0 +1,606 @@
+{
+  "d": {
+    "results": [
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000000',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000000',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000000",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F003",
+        "Plant": "PL02",
+        "StorageLocation": "SL02",
+        "GoodsMovementType": "242",
+        "QuantityInEntryUnit": "-18008.376",
+        "EntryUnit": "M3",
+        "EntryUnitISOCode": "M3",
+        "PostingDate": "2026-05-12T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-03"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000001',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000001',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000001",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F005",
+        "Plant": "PL01",
+        "StorageLocation": "SL04",
+        "GoodsMovementType": "101",
+        "QuantityInEntryUnit": "7387.015",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "/Date(1762688204207)/",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-04"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000002',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000002',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000002",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F005",
+        "Plant": "PL01",
+        "StorageLocation": "SL01",
+        "GoodsMovementType": "242",
+        "QuantityInEntryUnit": "2306.603",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "2025-07-07T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-02"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000003',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000003',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000003",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F005",
+        "Plant": "PL02",
+        "StorageLocation": "SL01",
+        "GoodsMovementType": "242",
+        "QuantityInEntryUnit": "20347.762",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "/Date(1776166604207)/",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-02"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000004',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000004',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000004",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F005",
+        "Plant": "PL01",
+        "StorageLocation": "SL03",
+        "GoodsMovementType": "313",
+        "QuantityInEntryUnit": "20194.039",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "2025-11-15T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-01"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000005',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000005',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000005",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F001",
+        "Plant": "PL02",
+        "StorageLocation": "SL05",
+        "GoodsMovementType": "313",
+        "QuantityInEntryUnit": "17790.376",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "/Date(1754825804207)/",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-04"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000006',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000006',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000006",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F005",
+        "Plant": "PL01",
+        "StorageLocation": "SL01",
+        "GoodsMovementType": "101",
+        "QuantityInEntryUnit": "21565.068",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "2026-05-23T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-01"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000007',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000007',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000007",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F003",
+        "Plant": "PL04",
+        "StorageLocation": "SL04",
+        "GoodsMovementType": "242",
+        "QuantityInEntryUnit": "14790.839",
+        "EntryUnit": "M3",
+        "EntryUnitISOCode": "M3",
+        "PostingDate": "/Date(1751110604207)/",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-03"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000008',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000008',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000008",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F007",
+        "Plant": "PL02",
+        "StorageLocation": "SL04",
+        "GoodsMovementType": "315",
+        "QuantityInEntryUnit": "-12167.075",
+        "EntryUnit": "TO",
+        "EntryUnitISOCode": "TO",
+        "PostingDate": "2026-02-01T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-03"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000009',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000009',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000009",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F003",
+        "Plant": "PL05",
+        "StorageLocation": "SL02",
+        "GoodsMovementType": "241",
+        "QuantityInEntryUnit": "16630.354",
+        "EntryUnit": "M3",
+        "EntryUnitISOCode": "M3",
+        "PostingDate": "/Date(1749123404207)/",
+        "MasterFixedAsset": "FA-GEN-18",
+        "CostCenter": "CC-OPS-04"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000010',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000010',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000010",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F001",
+        "Plant": "PL04",
+        "StorageLocation": "SL02",
+        "GoodsMovementType": "315",
+        "QuantityInEntryUnit": "1652.037",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "/Date(1756899404207)/",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-03"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000011',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000011',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000011",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F005",
+        "Plant": "PL02",
+        "StorageLocation": "SL05",
+        "GoodsMovementType": "241",
+        "QuantityInEntryUnit": "24288.223",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "2026-05-02T00:00:00",
+        "MasterFixedAsset": "FA-GEN-39",
+        "CostCenter": "CC-OPS-03"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000012',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000012',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000012",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F007",
+        "Plant": "PL05",
+        "StorageLocation": "SL05",
+        "GoodsMovementType": "101",
+        "QuantityInEntryUnit": "17651.312",
+        "EntryUnit": "TO",
+        "EntryUnitISOCode": "TO",
+        "PostingDate": "/Date(1772969804207)/",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-03"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000013',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000013',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000013",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F005",
+        "Plant": "PL01",
+        "StorageLocation": "SL02",
+        "GoodsMovementType": "242",
+        "QuantityInEntryUnit": "13408.688",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "/Date(1753961804207)/",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-01"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000014',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000014',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000014",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F003",
+        "Plant": "PL05",
+        "StorageLocation": "SL04",
+        "GoodsMovementType": "315",
+        "QuantityInEntryUnit": "14794.434",
+        "EntryUnit": "M3",
+        "EntryUnitISOCode": "M3",
+        "PostingDate": "2026-01-04T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-04"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000015',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000015',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000015",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F003",
+        "Plant": "PL04",
+        "StorageLocation": "SL05",
+        "GoodsMovementType": "242",
+        "QuantityInEntryUnit": "1155.281",
+        "EntryUnit": "M3",
+        "EntryUnitISOCode": "M3",
+        "PostingDate": "2025-12-19T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-02"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000016',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000016',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000016",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F005",
+        "Plant": "PL04",
+        "StorageLocation": "SL05",
+        "GoodsMovementType": "101",
+        "QuantityInEntryUnit": "7954.771",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "/Date(1749901004207)/",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-03"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000017',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000017',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000017",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F003",
+        "Plant": "PL04",
+        "StorageLocation": "SL04",
+        "GoodsMovementType": "242",
+        "QuantityInEntryUnit": "18777.815",
+        "EntryUnit": "M3",
+        "EntryUnitISOCode": "M3",
+        "PostingDate": "/Date(1778413004207)/",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-03"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000018',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000018',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000018",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F003",
+        "Plant": "PL04",
+        "StorageLocation": "SL03",
+        "GoodsMovementType": "315",
+        "QuantityInEntryUnit": "11877.871",
+        "EntryUnit": "M3",
+        "EntryUnitISOCode": "M3",
+        "PostingDate": "2026-03-05T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-03"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000019',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000019',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000019",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F005",
+        "Plant": "PL02",
+        "StorageLocation": "SL05",
+        "GoodsMovementType": "315",
+        "QuantityInEntryUnit": "5859.505",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "2025-10-03T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-03"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000020',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000020',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000020",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F001",
+        "Plant": "PL05",
+        "StorageLocation": "SL04",
+        "GoodsMovementType": "242",
+        "QuantityInEntryUnit": "11656.212",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "2025-07-14T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-04"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000021',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000021',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000021",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F005",
+        "Plant": "PL05",
+        "StorageLocation": "SL05",
+        "GoodsMovementType": "241",
+        "QuantityInEntryUnit": "9004.435",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "/Date(1770377804207)/",
+        "MasterFixedAsset": "FA-GEN-35",
+        "CostCenter": "CC-OPS-03"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000022',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000022',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000022",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F007",
+        "Plant": "PL02",
+        "StorageLocation": "SL03",
+        "GoodsMovementType": "101",
+        "QuantityInEntryUnit": "6522.031",
+        "EntryUnit": "TO",
+        "EntryUnitISOCode": "TO",
+        "PostingDate": "2026-01-29T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-01"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000023',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000023',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000023",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F001",
+        "Plant": "PL02",
+        "StorageLocation": "SL02",
+        "GoodsMovementType": "101",
+        "QuantityInEntryUnit": "22047.957",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "2026-03-12T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-04"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000024',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000024',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000024",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F007",
+        "Plant": "PL04",
+        "StorageLocation": "SL03",
+        "GoodsMovementType": "315",
+        "QuantityInEntryUnit": "22685.545",
+        "EntryUnit": "TO",
+        "EntryUnitISOCode": "TO",
+        "PostingDate": "2026-01-12T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-03"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000025',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000025',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000025",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F003",
+        "Plant": "PL04",
+        "StorageLocation": "SL05",
+        "GoodsMovementType": "315",
+        "QuantityInEntryUnit": "12231.784",
+        "EntryUnit": "M3",
+        "EntryUnitISOCode": "M3",
+        "PostingDate": "/Date(1766489804207)/",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-01"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000026',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000026',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000026",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F005",
+        "Plant": "PL01",
+        "StorageLocation": "SL01",
+        "GoodsMovementType": "101",
+        "QuantityInEntryUnit": "10401.095",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "/Date(1770550604207)/",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-04"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000027',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000027',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000027",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F001",
+        "Plant": "PL02",
+        "StorageLocation": "SL01",
+        "GoodsMovementType": "241",
+        "QuantityInEntryUnit": "15626.383",
+        "EntryUnit": "L",
+        "EntryUnitISOCode": "L",
+        "PostingDate": "2025-09-14T00:00:00",
+        "MasterFixedAsset": "FA-GEN-68",
+        "CostCenter": "CC-OPS-04"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000028',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000028',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000028",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F003",
+        "Plant": "PL04",
+        "StorageLocation": "SL03",
+        "GoodsMovementType": "315",
+        "QuantityInEntryUnit": "7804.309",
+        "EntryUnit": "M3",
+        "EntryUnitISOCode": "M3",
+        "PostingDate": "2025-06-02T00:00:00",
+        "MasterFixedAsset": "",
+        "CostCenter": "CC-OPS-01"
+      },
+      {
+        "__metadata": {
+          "id": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000029',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "uri": "https://s4hana.enterprise.com/sap/opu/odata/sap/API_MATERIAL_DOCUMENT_SRV/A_MaterialDocumentItem(MaterialDocument='1000000029',MaterialDocumentYear='2025',MaterialDocumentItem='1')",
+          "type": "API_MATERIAL_DOCUMENT_SRV.A_MaterialDocumentItemType"
+        },
+        "MaterialDocument": "1000000029",
+        "MaterialDocumentYear": "2025",
+        "MaterialDocumentItem": "1",
+        "Material": "MAT-F007",
+        "Plant": "PL04",
+        "StorageLocation": "SL05",
+        "GoodsMovementType": "241",
+        "QuantityInEntryUnit": "16728.162",
+        "EntryUnit": "TO",
+        "EntryUnitISOCode": "TO",
+        "PostingDate": "2026-05-07T00:00:00",
+        "MasterFixedAsset": "FA-GEN-58",
+        "CostCenter": "CC-OPS-02"
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+# Python / Django
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+db.sqlite3
+raw_batches/
+sent_emails/
+*.log
+
+# Frontend React / Vite
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env
+.eslintcache
+
+# OS/System
+.DS_Store
+Thumbs.db

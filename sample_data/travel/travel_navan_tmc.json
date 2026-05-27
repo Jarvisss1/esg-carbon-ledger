@@ -1,0 +1,277 @@
+{
+  "navanTmcResponse": {
+    "totalCount": 10,
+    "data": [
+      {
+        "bookingId": "navan-825169",
+        "bookingStatus": "TICKETED",
+        "createdDate": "2026-04-02T17:06:44Z",
+        "passengerInfo": [
+          {
+            "firstName": "EmpFirstName4",
+            "lastName": "EmpLastName4",
+            "employeeId": "EMP-004",
+            "email": "employee4@enterprise.com",
+            "passengerType": "EMPLOYEE"
+          }
+        ],
+        "flightDetails": {
+          "carrierCode": "SQ",
+          "cabinClassCode": "F",
+          "originAirport": "DEL",
+          "destinationAirport": "JFK",
+          "departureDateTime": "2026-04-22T17:06:44Z",
+          "arrivalDateTime": "2026-04-22T22:06:44Z"
+        },
+        "financials": {
+          "totalCharge": 412.4,
+          "serviceFee": 10.0,
+          "currency": "INR"
+        }
+      },
+      {
+        "bookingId": "navan-570821",
+        "bookingStatus": "TICKETED",
+        "createdDate": "2025-11-25T17:06:44Z",
+        "passengerInfo": [
+          {
+            "firstName": "EmpFirstName3",
+            "lastName": "EmpLastName3",
+            "employeeId": "EMP-003",
+            "email": "employee3@enterprise.com",
+            "passengerType": "EMPLOYEE"
+          }
+        ],
+        "flightDetails": {
+          "carrierCode": "AI",
+          "cabinClassCode": "W",
+          "originAirport": "LHR",
+          "destinationAirport": "DEL",
+          "departureDateTime": "2025-12-15T17:06:44Z",
+          "arrivalDateTime": "2025-12-16T02:06:44Z"
+        },
+        "financials": {
+          "totalCharge": 549.59,
+          "serviceFee": 10.0,
+          "currency": "USD"
+        }
+      },
+      {
+        "bookingId": "navan-738562",
+        "bookingStatus": "HOLD",
+        "createdDate": "2025-12-03T17:06:44Z",
+        "passengerInfo": [
+          {
+            "firstName": "EmpFirstName3",
+            "lastName": "EmpLastName3",
+            "employeeId": "EMP-003",
+            "email": "employee3@enterprise.com",
+            "passengerType": "EMPLOYEE"
+          }
+        ],
+        "flightDetails": {
+          "carrierCode": "SQ",
+          "cabinClassCode": "F",
+          "originAirport": "BOM",
+          "destinationAirport": "SFO",
+          "departureDateTime": "2025-12-23T17:06:44Z",
+          "arrivalDateTime": "2025-12-24T05:06:44Z"
+        },
+        "financials": {
+          "totalCharge": 1162.57,
+          "serviceFee": 10.0,
+          "currency": "USD"
+        }
+      },
+      {
+        "bookingId": "navan-501334",
+        "bookingStatus": "TICKETED",
+        "createdDate": "2025-11-18T17:06:44Z",
+        "passengerInfo": [
+          {
+            "firstName": "EmpFirstName1",
+            "lastName": "EmpLastName1",
+            "employeeId": "EMP-001",
+            "email": "employee1@enterprise.com",
+            "passengerType": "EMPLOYEE"
+          }
+        ],
+        "flightDetails": {
+          "carrierCode": "AI",
+          "cabinClassCode": "W",
+          "originAirport": "LHR",
+          "destinationAirport": "SFO",
+          "departureDateTime": "2025-12-08T17:06:44Z",
+          "arrivalDateTime": "2025-12-08T21:06:44Z"
+        },
+        "financials": {
+          "totalCharge": 462.94,
+          "serviceFee": 10.0,
+          "currency": "USD"
+        }
+      },
+      {
+        "bookingId": "navan-774071",
+        "bookingStatus": "CANCELED",
+        "createdDate": "2026-04-24T17:06:44Z",
+        "passengerInfo": [
+          {
+            "firstName": "GuestFirstName4",
+            "lastName": "GuestLastName4",
+            "employeeId": null,
+            "email": "guest_4@external-partner.com",
+            "passengerType": "GUEST"
+          }
+        ],
+        "flightDetails": {
+          "carrierCode": "BA",
+          "cabinClassCode": "F",
+          "originAirport": "JFK",
+          "destinationAirport": "LHR",
+          "departureDateTime": "2026-05-14T17:06:44Z",
+          "arrivalDateTime": "2026-05-15T04:06:44Z"
+        },
+        "financials": {
+          "totalCharge": 1642.56,
+          "serviceFee": 10.0,
+          "currency": "USD"
+        }
+      },
+      {
+        "bookingId": "navan-974559",
+        "bookingStatus": "HOLD",
+        "createdDate": "2026-04-04T17:06:44Z",
+        "passengerInfo": [
+          {
+            "firstName": "EmpFirstName4",
+            "lastName": "EmpLastName4",
+            "employeeId": "EMP-004",
+            "email": "employee4@enterprise.com",
+            "passengerType": "EMPLOYEE"
+          }
+        ],
+        "flightDetails": {
+          "carrierCode": "EK",
+          "cabinClassCode": "W",
+          "originAirport": "SFO",
+          "destinationAirport": "SIN",
+          "departureDateTime": "2026-04-24T17:06:44Z",
+          "arrivalDateTime": "2026-04-25T01:06:44Z"
+        },
+        "financials": {
+          "totalCharge": 1517.75,
+          "serviceFee": 10.0,
+          "currency": "USD"
+        }
+      },
+      {
+        "bookingId": "navan-873335",
+        "bookingStatus": "TICKETED",
+        "createdDate": "2026-03-28T17:06:44Z",
+        "passengerInfo": [
+          {
+            "firstName": "GuestFirstName6",
+            "lastName": "GuestLastName6",
+            "employeeId": null,
+            "email": "guest_6@external-partner.com",
+            "passengerType": "GUEST"
+          }
+        ],
+        "flightDetails": {
+          "carrierCode": "AI",
+          "cabinClassCode": "W",
+          "originAirport": "SFO",
+          "destinationAirport": "BOM",
+          "departureDateTime": "2026-04-17T17:06:44Z",
+          "arrivalDateTime": "2026-04-18T00:06:44Z"
+        },
+        "financials": {
+          "totalCharge": 576.9,
+          "serviceFee": 10.0,
+          "currency": "USD"
+        }
+      },
+      {
+        "bookingId": "navan-584975",
+        "bookingStatus": "HOLD",
+        "createdDate": "2025-11-09T17:06:44Z",
+        "passengerInfo": [
+          {
+            "firstName": "EmpFirstName1",
+            "lastName": "EmpLastName1",
+            "employeeId": "EMP-001",
+            "email": "employee1@enterprise.com",
+            "passengerType": "EMPLOYEE"
+          }
+        ],
+        "flightDetails": {
+          "carrierCode": "AI",
+          "cabinClassCode": "F",
+          "originAirport": "SIN",
+          "destinationAirport": "SFO",
+          "departureDateTime": "2025-11-29T17:06:44Z",
+          "arrivalDateTime": "2025-11-30T00:06:44Z"
+        },
+        "financials": {
+          "totalCharge": 292.67,
+          "serviceFee": 10.0,
+          "currency": "USD"
+        }
+      },
+      {
+        "bookingId": "navan-684254",
+        "bookingStatus": "TICKETED",
+        "createdDate": "2026-03-09T17:06:44Z",
+        "passengerInfo": [
+          {
+            "firstName": "EmpFirstName5",
+            "lastName": "EmpLastName5",
+            "employeeId": "EMP-005",
+            "email": "employee5@enterprise.com",
+            "passengerType": "EMPLOYEE"
+          }
+        ],
+        "flightDetails": {
+          "carrierCode": "AI",
+          "cabinClassCode": "W",
+          "originAirport": "SFO",
+          "destinationAirport": "JFK",
+          "departureDateTime": "2026-03-29T17:06:44Z",
+          "arrivalDateTime": "2026-03-30T00:06:44Z"
+        },
+        "financials": {
+          "totalCharge": 1109.8,
+          "serviceFee": 10.0,
+          "currency": "USD"
+        }
+      },
+      {
+        "bookingId": "navan-670466",
+        "bookingStatus": "TICKETED",
+        "createdDate": "2026-04-11T17:06:44Z",
+        "passengerInfo": [
+          {
+            "firstName": "EmpFirstName5",
+            "lastName": "EmpLastName5",
+            "employeeId": "EMP-005",
+            "email": "employee5@enterprise.com",
+            "passengerType": "EMPLOYEE"
+          }
+        ],
+        "flightDetails": {
+          "carrierCode": "AI",
+          "cabinClassCode": "W",
+          "originAirport": "SFO",
+          "destinationAirport": "LHR",
+          "departureDateTime": "2026-05-01T17:06:44Z",
+          "arrivalDateTime": "2026-05-02T01:06:44Z"
+        },
+        "financials": {
+          "totalCharge": 675.87,
+          "serviceFee": 10.0,
+          "currency": "USD"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,466 @@
+{
+  "ItineraryList": {
+    "Count": 12,
+    "Bookings": [
+      {
+        "Id": "b-174682",
+        "ClientLocator": "LOC2205X",
+        "BookingSource": "CONCUR_TRAVEL",
+        "Traveller": {
+          "EmployeeId": "EMP-005",
+          "EmailAddress": "employee6@enterprise.com",
+          "ProfileStatus": "ACTIVE"
+        },
+        "PaymentBreakdown": {
+          "BaseFare": 2274.15,
+          "TaxAmount": 59.18,
+          "ServiceFees": 15.0,
+          "CurrencyCode": "EUR"
+        },
+        "Segments": [
+          {
+            "SegmentType": "AIR",
+            "AirlineCode": "EK",
+            "FlightNumber": "409",
+            "CabinClass": "First",
+            "Departure": {
+              "AirportCode": "BOM",
+              "City": "Mumbai",
+              "DateTime": "2026-05-25T17:06:44"
+            },
+            "Arrival": {
+              "AirportCode": "LHR",
+              "City": "London",
+              "DateTime": "2026-05-25T21:06:44"
+            },
+            "DistanceKilometers": null
+          },
+          {
+            "SegmentType": "HOTEL",
+            "HotelChain": "Marriott",
+            "Location": {
+              "City": "London",
+              "CountryCode": "GB"
+            },
+            "CheckInDate": "2026-05-25",
+            "CheckOutDate": "2026-05-27",
+            "NumberOfNights": 2,
+            "NightlyRate": 125.88,
+            "LocalCurrency": "USD"
+          }
+        ]
+      },
+      {
+        "Id": "b-615205",
+        "ClientLocator": "LOC3117X",
+        "BookingSource": "CONCUR_TRAVEL",
+        "Traveller": {
+          "EmployeeId": "EMP-003",
+          "EmailAddress": "employee5@enterprise.com",
+          "ProfileStatus": "ACTIVE"
+        },
+        "PaymentBreakdown": {
+          "BaseFare": 2259.21,
+          "TaxAmount": 49.43,
+          "ServiceFees": 15.0,
+          "CurrencyCode": "EUR"
+        },
+        "Segments": [
+          {
+            "SegmentType": "AIR",
+            "AirlineCode": "BA",
+            "FlightNumber": "453",
+            "CabinClass": "Business",
+            "Departure": {
+              "AirportCode": "LHR",
+              "City": "London",
+              "DateTime": "2026-05-25T17:06:44"
+            },
+            "Arrival": {
+              "AirportCode": "SIN",
+              "City": "Singapore",
+              "DateTime": "2026-05-25T18:06:44"
+            },
+            "DistanceKilometers": null
+          },
+          {
+            "SegmentType": "HOTEL",
+            "HotelChain": "Marriott",
+            "Location": {
+              "City": "Singapore",
+              "CountryCode": "SG"
+            },
+            "CheckInDate": "2026-05-25",
+            "CheckOutDate": "2026-05-27",
+            "NumberOfNights": 2,
+            "NightlyRate": 349.21,
+            "LocalCurrency": "USD"
+          }
+        ]
+      },
+      {
+        "Id": "b-875225",
+        "ClientLocator": "LOC7265X",
+        "BookingSource": "CONCUR_TRAVEL",
+        "Traveller": {
+          "EmployeeId": "EMP-004",
+          "EmailAddress": "employee2@enterprise.com",
+          "ProfileStatus": "ACTIVE"
+        },
+        "PaymentBreakdown": {
+          "BaseFare": 2052.97,
+          "TaxAmount": 141.06,
+          "ServiceFees": 15.0,
+          "CurrencyCode": "EUR"
+        },
+        "Segments": [
+          {
+            "SegmentType": "AIR",
+            "AirlineCode": "BA",
+            "FlightNumber": "864",
+            "CabinClass": "Business",
+            "Departure": {
+              "AirportCode": "SIN",
+              "City": "Singapore",
+              "DateTime": "2026-05-21T17:06:44"
+            },
+            "Arrival": {
+              "AirportCode": "BOM",
+              "City": "Mumbai",
+              "DateTime": "2026-05-21T21:06:44"
+            },
+            "DistanceKilometers": null
+          }
+        ]
+      },
+      {
+        "Id": "b-730478",
+        "ClientLocator": "LOC8882X",
+        "BookingSource": "CONCUR_TRAVEL",
+        "Traveller": {
+          "EmployeeId": "EMP-005",
+          "EmailAddress": "employee3@enterprise.com",
+          "ProfileStatus": "ACTIVE"
+        },
+        "PaymentBreakdown": {
+          "BaseFare": 764.16,
+          "TaxAmount": 163.61,
+          "ServiceFees": 15.0,
+          "CurrencyCode": "USD"
+        },
+        "Segments": [
+          {
+            "SegmentType": "AIR",
+            "AirlineCode": "BA",
+            "FlightNumber": "177",
+            "CabinClass": "First",
+            "Departure": {
+              "AirportCode": "LHR",
+              "City": "London",
+              "DateTime": "2026-05-16T17:06:44"
+            },
+            "Arrival": {
+              "AirportCode": "BOM",
+              "City": "Mumbai",
+              "DateTime": "2026-05-17T01:06:44"
+            },
+            "DistanceKilometers": null
+          },
+          {
+            "SegmentType": "HOTEL",
+            "HotelChain": "Marriott",
+            "Location": {
+              "City": "Mumbai",
+              "CountryCode": "IN"
+            },
+            "CheckInDate": "2026-05-16",
+            "CheckOutDate": "2026-05-18",
+            "NumberOfNights": 2,
+            "NightlyRate": 231.93,
+            "LocalCurrency": "INR"
+          }
+        ]
+      },
+      {
+        "Id": "b-186482",
+        "ClientLocator": "LOC4965X",
+        "BookingSource": "CONCUR_TRAVEL",
+        "Traveller": {
+          "EmployeeId": "EMP-005",
+          "EmailAddress": "employee5@enterprise.com",
+          "ProfileStatus": "ACTIVE"
+        },
+        "PaymentBreakdown": {
+          "BaseFare": 411.77,
+          "TaxAmount": 203.74,
+          "ServiceFees": 15.0,
+          "CurrencyCode": "EUR"
+        },
+        "Segments": [
+          {
+            "SegmentType": "AIR",
+            "AirlineCode": "EK",
+            "FlightNumber": "133",
+            "CabinClass": "First",
+            "Departure": {
+              "AirportCode": "LHR",
+              "City": "London",
+              "DateTime": "2026-05-12T17:06:44"
+            },
+            "Arrival": {
+              "AirportCode": "JFK",
+              "City": "New York",
+              "DateTime": "2026-05-12T23:06:44"
+            },
+            "DistanceKilometers": null
+          }
+        ]
+      },
+      {
+        "Id": "b-427303",
+        "ClientLocator": "LOC5762X",
+        "BookingSource": "CONCUR_TRAVEL",
+        "Traveller": {
+          "EmployeeId": "EMP-001",
+          "EmailAddress": "employee2@enterprise.com",
+          "ProfileStatus": "ACTIVE"
+        },
+        "PaymentBreakdown": {
+          "BaseFare": 2107.77,
+          "TaxAmount": 64.14,
+          "ServiceFees": 15.0,
+          "CurrencyCode": "INR"
+        },
+        "Segments": [
+          {
+            "SegmentType": "AIR",
+            "AirlineCode": "AI",
+            "FlightNumber": "784",
+            "CabinClass": "Economy",
+            "Departure": {
+              "AirportCode": "DEL",
+              "City": "Delhi",
+              "DateTime": "2026-05-17T17:06:44"
+            },
+            "Arrival": {
+              "AirportCode": "BOM",
+              "City": "Mumbai",
+              "DateTime": "2026-05-18T03:06:44"
+            },
+            "DistanceKilometers": null
+          }
+        ]
+      },
+      {
+        "Id": "b-611710",
+        "ClientLocator": "LOC9047X",
+        "BookingSource": "CONCUR_TRAVEL",
+        "Traveller": {
+          "EmployeeId": "EMP-005",
+          "EmailAddress": "employee2@enterprise.com",
+          "ProfileStatus": "ACTIVE"
+        },
+        "PaymentBreakdown": {
+          "BaseFare": 329.33,
+          "TaxAmount": 237.45,
+          "ServiceFees": 15.0,
+          "CurrencyCode": "GBP"
+        },
+        "Segments": [
+          {
+            "SegmentType": "AIR",
+            "AirlineCode": "EK",
+            "FlightNumber": "871",
+            "CabinClass": "Business",
+            "Departure": {
+              "AirportCode": "SIN",
+              "City": "Singapore",
+              "DateTime": "2026-05-23T17:06:44"
+            },
+            "Arrival": {
+              "AirportCode": "DEL",
+              "City": "Delhi",
+              "DateTime": "2026-05-24T03:06:44"
+            },
+            "DistanceKilometers": null
+          }
+        ]
+      },
+      {
+        "Id": "b-968630",
+        "ClientLocator": "LOC9378X",
+        "BookingSource": "CONCUR_TRAVEL",
+        "Traveller": {
+          "EmployeeId": "EMP-003",
+          "EmailAddress": "employee2@enterprise.com",
+          "ProfileStatus": "ACTIVE"
+        },
+        "PaymentBreakdown": {
+          "BaseFare": 2395.44,
+          "TaxAmount": 68.42,
+          "ServiceFees": 15.0,
+          "CurrencyCode": "EUR"
+        },
+        "Segments": [
+          {
+            "SegmentType": "AIR",
+            "AirlineCode": "EK",
+            "FlightNumber": "785",
+            "CabinClass": "Business",
+            "Departure": {
+              "AirportCode": "JFK",
+              "City": "New York",
+              "DateTime": "2026-05-17T17:06:44"
+            },
+            "Arrival": {
+              "AirportCode": "SIN",
+              "City": "Singapore",
+              "DateTime": "2026-05-17T19:06:44"
+            },
+            "DistanceKilometers": null
+          }
+        ]
+      },
+      {
+        "Id": "b-958430",
+        "ClientLocator": "LOC3900X",
+        "BookingSource": "CONCUR_TRAVEL",
+        "Traveller": {
+          "EmployeeId": "EMP-006",
+          "EmailAddress": "employee2@enterprise.com",
+          "ProfileStatus": "ACTIVE"
+        },
+        "PaymentBreakdown": {
+          "BaseFare": 2028.32,
+          "TaxAmount": 114.83,
+          "ServiceFees": 15.0,
+          "CurrencyCode": "GBP"
+        },
+        "Segments": [
+          {
+            "SegmentType": "AIR",
+            "AirlineCode": "SQ",
+            "FlightNumber": "711",
+            "CabinClass": "Economy",
+            "Departure": {
+              "AirportCode": "SIN",
+              "City": "Singapore",
+              "DateTime": "2026-05-21T17:06:44"
+            },
+            "Arrival": {
+              "AirportCode": "SFO",
+              "City": "San Francisco",
+              "DateTime": "2026-05-22T07:06:44"
+            },
+            "DistanceKilometers": null
+          }
+        ]
+      },
+      {
+        "Id": "b-674277",
+        "ClientLocator": "LOC1103X",
+        "BookingSource": "CONCUR_TRAVEL",
+        "Traveller": {
+          "EmployeeId": "EMP-004",
+          "EmailAddress": "employee1@enterprise.com",
+          "ProfileStatus": "ACTIVE"
+        },
+        "PaymentBreakdown": {
+          "BaseFare": 1523.36,
+          "TaxAmount": 249.18,
+          "ServiceFees": 15.0,
+          "CurrencyCode": "USD"
+        },
+        "Segments": [
+          {
+            "SegmentType": "AIR",
+            "AirlineCode": "BA",
+            "FlightNumber": "702",
+            "CabinClass": "Economy",
+            "Departure": {
+              "AirportCode": "SFO",
+              "City": "San Francisco",
+              "DateTime": "2026-05-22T17:06:44"
+            },
+            "Arrival": {
+              "AirportCode": "SIN",
+              "City": "Singapore",
+              "DateTime": "2026-05-22T19:06:44"
+            },
+            "DistanceKilometers": null
+          }
+        ]
+      },
+      {
+        "Id": "b-495085",
+        "ClientLocator": "LOC9404X",
+        "BookingSource": "CONCUR_TRAVEL",
+        "Traveller": {
+          "EmployeeId": "EMP-002",
+          "EmailAddress": "employee6@enterprise.com",
+          "ProfileStatus": "ACTIVE"
+        },
+        "PaymentBreakdown": {
+          "BaseFare": 1338.41,
+          "TaxAmount": 249.93,
+          "ServiceFees": 15.0,
+          "CurrencyCode": "USD"
+        },
+        "Segments": [
+          {
+            "SegmentType": "AIR",
+            "AirlineCode": "SQ",
+            "FlightNumber": "901",
+            "CabinClass": "Business",
+            "Departure": {
+              "AirportCode": "DEL",
+              "City": "Delhi",
+              "DateTime": "2026-05-14T17:06:44"
+            },
+            "Arrival": {
+              "AirportCode": "LHR",
+              "City": "London",
+              "DateTime": "2026-05-15T06:06:44"
+            },
+            "DistanceKilometers": null
+          }
+        ]
+      },
+      {
+        "Id": "b-932244",
+        "ClientLocator": "LOC6246X",
+        "BookingSource": "CONCUR_TRAVEL",
+        "Traveller": {
+          "EmployeeId": "EMP-005",
+          "EmailAddress": "employee2@enterprise.com",
+          "ProfileStatus": "ACTIVE"
+        },
+        "PaymentBreakdown": {
+          "BaseFare": 1560.0,
+          "TaxAmount": 105.91,
+          "ServiceFees": 15.0,
+          "CurrencyCode": "INR"
+        },
+        "Segments": [
+          {
+            "SegmentType": "AIR",
+            "AirlineCode": "BA",
+            "FlightNumber": "509",
+            "CabinClass": "Economy",
+            "Departure": {
+              "AirportCode": "LHR",
+              "City": "London",
+              "DateTime": "2026-05-22T17:06:44"
+            },
+            "Arrival": {
+              "AirportCode": "SIN",
+              "City": "Singapore",
+              "DateTime": "2026-05-23T02:06:44"
+            },
+            "DistanceKilometers": null
+          }
+        ]
+      }
+    ]
+  }
+}

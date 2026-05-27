@@ -1,0 +1,248 @@
+trip_id,expense_type,traveller_id,traveller_name,department,booking_date,travel_date,departure_airport,arrival_airport,cabin_class,airline,flight_number,distance_km,hotel_name,hotel_city,hotel_country,checkin_date,checkout_date,nights,ground_transport_type,ground_distance_km,amount,currency,notes,status
+TRIP-1040,GROUND,EMP-005,Liu Wei,Product,10/12/2024,12-Oct-2024,,,,,,,,,,,,,Taxi,0,61.49,INR,,Approved
+TRIP-1053,AIR,EMP-005,Liu Wei,Product,01/18/2024,02/11/2024,ZRH,LHR,Economy,United,EK555,,,,,,,,,,185.78,GBP,Leg 2 of 2,Approved
+TRIP-1064,AIR,EMP-001,Priya Sharma,Sales,2024-07-02,24-Jul-2024,HYD,LAX,First,Singapore Airlines,SQ780,,,,,,,,,,6821.48,INR,Leg 2 of 2,Approved
+TRIP-1049,GROUND,EMP-006,Sarah O'Brien,Legal,04-Oct-2024,04-Oct-2024,,,,,,,,,,,,,Bus,52.6,102.02,USD,,Approved
+TRIP-1012,GROUND,EMP-002,James Whitfield,Engineering,2024-12-26,26-Dec-2024,,,,,,,,,,,,,Metro,0,130.53,,,Approved
+TRIP-1055,GROUND,EMP-001,Priya Sharma,Sales,16-Feb-2024,16-Feb-2024,,,,,,,,,,,,,Company Car,18.1,162.84,INR,,Approved
+TRIP-1021,AIR,EMP-006,Sarah O'Brien,Legal,27-Aug-2024,2024-10-10,MAA,YYZ,Business,Singapore Airlines,BA950,,,,,,,,,,3650.25,INR,,Approved
+TRIP-1050,GROUND,EMP-004,Carlos Reyes,Operations,28-Nov-2024,28-Nov-2024,,,,,,,,,,,,,Car Hire,60.9,106.1,GBP,,Approved
+TRIP-1003,AIR,EMP-005,Liu Wei,Product,20-Apr-2024,2024-05-07,HYD,AMS,Economy,Lufthansa,EK881,,,,,,,,,,2107.33,INR,Leg 1 of 2,Approved
+TRIP-1012,GROUND,EMP-002,James Whitfield,Engineering,2024-12-26,12/26/2024,,,,,,,,,,,,,Company Car,71.8,193.62,INR,,Approved
+TRIP-1001,GROUND,EMP-006,Sarah O'Brien,Legal,2024-05-15,15-May-2024,,,,,,,,,,,,,Rail,54.0,195.8,USD,,Approved
+TRIP-1064,AIR,EMP-001,Priya Sharma,Sales,10-Jun-2024,07/24/2024,PNQ,HYD,First,Air India,BA174,,,,,,,,,,4746.83,INR,Leg 1 of 2,Approved
+TRIP-1052,AIR,EMP-006,Sarah O'Brien,Legal,2024-07-18,2024-08-20,BKK,NRT,First,British Airways,SQ924,,,,,,,,,,2685.32,GBP,Leg 2 of 2,Approved
+TRIP-1046,AIR,EMP-002,James Whitfield,Engineering,10/26/2024,11/10/2024,LAX,LHR,Economy,Air India,BA701,,,,,,,,,,1482.05,EUR,,Approved
+TRIP-1009,GROUND,EMP-006,Sarah O'Brien,Legal,18-May-2024,18-May-2024,,,,,,,,,,,,,Company Car,19.1,167.34,INR,,Approved
+TRIP-1055,HOTEL,EMP-001,Priya Sharma,Sales,29-Jan-2024,,,,,,,,Oberoi,Chennai,IN,14-Feb-2024,16-Feb-2024,2,,,383.45,INR,,Approved
+TRIP-1019,AIR,EMP-003,Anjali Mehta,Finance,22-Nov-2024,12/17/2024,SFO,LAX,Economy,United,BA224,,,,,,,,,,123.42,GBP,,Approved
+TRIP-1028,AIR,EMP-005,Liu Wei,Product,04/27/2024,10-Jun-2024,FRA,BOM,Economy,Qatar Airways,BA791,,,,,,,,,,1305.64,USD,,Approved
+TRIP-1046,GROUND,EMP-002,James Whitfield,Engineering,11/14/2024,2024-11-14,,,,,,,,,,,,,Company Car,76.9,118.99,USD,,Approved
+TRIP-1015,GROUND,EMP-006,Sarah O'Brien,Legal,2024-09-12,2024-09-12,,,,,,,,,,,,,Bus,9.2,117.58,USD,,Approved
+TRIP-1039,HOTEL,EMP-001,Priya Sharma,Sales,2024-04-12,,,,,,,,Marriott,Chennai,IN,2024-04-30,2024-05-02,2,,,540.63,INR,,Approved
+TRIP-1046,HOTEL,EMP-002,James Whitfield,Engineering,11/03/2024,,,,,,,,The Leela,London,GB,11/10/2024,2024-11-14,4,,,429.52,EUR,,Approved
+TRIP-1056,AIR,EMP-002,James Whitfield,Engineering,12-Mar-2024,25-Mar-2024,GRU,BKK,Business,Qatar Airways,SQ649,,,,,,,,,,6167.29,USD,,Approved
+TRIP-1029,HOTEL,EMP-004,Carlos Reyes,Operations,10/19/2024,,,,,,,,Taj Hotels,Bangkok,TH,,2024-11-12,3,,,858.43,GBP,,Approved
+TRIP-1009,HOTEL,EMP-006,Sarah O'Brien,Legal,04/19/2024,,,,,,,,The Leela,Pune,IN,,05/18/2024,1,,,83.74,INR,,Approved
+TRIP-1001,HOTEL,EMP-006,Sarah O'Brien,Legal,04/19/2024,,,,,,,,IHG,Los Angeles,US,14-May-2024,2024-05-20,6,,,1355.17,EUR,,Approved
+TRIP-1010,GROUND,EMP-004,Carlos Reyes,Operations,05-Dec-2024,12/05/2024,,,,,,,,,,,,,Rail,13.1,166.67,USD,,Approved
+TRIP-1047,GROUND,EMP-004,Carlos Reyes,Operations,04/25/2024,25-Apr-2024,,,,,,,,,,,,,Uber/Ola,70.6,129.25,EUR,,Approved
+TRIP-1028,GROUND,EMP-005,Liu Wei,Product,12-Jun-2024,2024-06-12,,,,,,,,,,,,,Uber/Ola,22.3,123.11,INR,,Approved
+TRIP-1056,HOTEL,EMP-002,James Whitfield,Engineering,2024-03-17,,,,,,,,Premier Inn,Bangkok,TH,03/25/2024,27-Mar-2024,2,,,472.36,GBP,,Approved
+TRIP-1027,AIR,EMP-005,Liu Wei,Product,06-Feb-2024,06-Mar-2024,ZRH,CCU,Economy,IndiGo,BA883,,,,,,,,,,822.13,EUR,,Approved
+TRIP-1044,AIR,EMP-001,Priya Sharma,Sales,2024-07-17,2024-08-25,SIN,LAX,First,Emirates,BA248,,,,,,,,,,6936.82,EUR,,Approved
+TRIP-1062,HOTEL,EMP-006,Sarah O'Brien,Legal,28-Jan-2024,,,,,,,,Taj Hotels,Amsterdam,NL,02/11/2024,18-Feb-2024,7,,,1612.41,GBP,,Approved
+TRIP-1048,GROUND,EMP-003,Anjali Mehta,Finance,2024-04-04,04-Apr-2024,,,,,,,,,,,,,Company Car,35.0,177.12,USD,,Approved
+TRIP-1063,AIR,EMP-006,Sarah O'Brien,Legal,02-Feb-2024,2024-02-27,AMS,AMD,Business,IndiGo,BA976,,,,,,,,,,2258.03,USD,,Approved
+TRIP-1047,GROUND,EMP-004,Carlos Reyes,Operations,2024-04-27,2024-04-27,,,,,,,,,,,,,Uber/Ola,28.3,25.66,GBP,,Approved
+TRIP-1055,AIR,EMP-001,Priya Sharma,Sales,2024-01-12,14-Feb-2024,GRU,MAA,Economy,Delta,SQ175,,,,,,,,,,2564.14,USD,,Approved
+TRIP-1026,AIR,EMP-003,Anjali Mehta,Finance,26-Jan-2024,2024-02-04,MAN,LAX,PremiumEconomy,Vistara,EK853,,,,,,,,,,2066.14,EUR,,Approved
+TRIP-1022,AIR,EMP-004,Carlos Reyes,Operations,20-Aug-2024,2024-09-06,DXB,CCU,Economy,Qatar Airways,EK252,,,,,,,,,,698.52,USD,,Approved
+TRIP-1036,AIR,EMP-002,James Whitfield,Engineering,2024-06-29,17-Jul-2024,BOM,PNQ,Business,Qatar Airways,EK165,,,,,,,,,,121.32,INR,45-min hop — business class flagged for review,Approved
+TRIP-1049,HOTEL,EMP-006,Sarah O'Brien,Legal,09/26/2024,,,,,,,,Ibis,Frankfurt,DE,03-Oct-2024,2024-10-06,3,,,458.37,GBP,,Approved
+TRIP-1006,AIR,EMP-001,Priya Sharma,Sales,01/28/2024,2024-02-08,MUC,PNQ,Business,Emirates,EK136,,,,,,,,,,2073.35,USD,Leg 2 of 2,Approved
+TRIP-1047,HOTEL,EMP-004,Carlos Reyes,Operations,04/17/2024,,,,,,,,Ibis,Hong Kong,HK,04/24/2024,2024-04-29,5,,,1057.53,EUR,,Approved
+TRIP-1024,AIR,EMP-003,Anjali Mehta,Finance,2024-02-19,03/16/2024,PNQ,ORD,Economy,IndiGo,6E838,,,,,,,,,,1527.64,INR,,Approved
+TRIP-1012,GROUND,EMP-002,James Whitfield,Engineering,12/27/2024,12/27/2024,,,,,,,,,,,,,Bus,37.7,103.59,INR,,Approved
+TRIP-1054,GROUND,EMP-003,Anjali Mehta,Finance,2024-04-03,03-Apr-2024,,,,,,,,,,,,,Uber/Ola,74.1,195.65,USD,,Approved
+TRIP-1042,AIR,EMP-002,James Whitfield,Engineering,2024-10-16,2024-10-29,PNQ,LAX,PremiumEconomy,United,6E640,,,,,,,,,,4611.43,INR,Leg 2 of 2,Approved
+TRIP-1062,AIR,EMP-006,Sarah O'Brien,Legal,01/26/2024,02/11/2024,JFK,AMS,Economy,Singapore Airlines,EK921,,,,,,,,,,681.34,USD,,Approved
+TRIP-1018,HOTEL,EMP-003,Anjali Mehta,Finance,04-Feb-2024,,,,,,,,Oberoi,Mumbai,IN,15-Feb-2024,2024-02-20,5,,,532.76,INR,,Approved
+TRIP-1002,AIR,EMP-002,James Whitfield,Engineering,11/06/2024,07-Dec-2024,BLR,JFK,Economy,British Airways,EK314,,,,,,,,,,787.96,INR,Leg 1 of 2,Approved
+TRIP-1043,AIR,EMP-006,Sarah O'Brien,Legal,14-Apr-2024,04/28/2024,ORD,FRA,Economy,Lufthansa,AI825,,,,,,,,,,1241.62,GBP,Leg 1 of 2,Approved
+TRIP-1051,AIR,EMP-003,Anjali Mehta,Finance,04/25/2024,2024-06-06,LHR,AMS,Economy,Singapore Airlines,EK355,,,,,,,,,,135.83,GBP,,Approved
+TRIP-1009,AIR,EMP-006,Sarah O'Brien,Legal,2024-04-06,2024-05-17,BOM,PNQ,Economy,Singapore Airlines,6E792,,,,,,,,,,-15.99,INR,,Approved
+TRIP-1062,GROUND,EMP-006,Sarah O'Brien,Legal,14-Feb-2024,14-Feb-2024,,,,,,,,,,,,,Metro,0,42.95,USD,,Approved
+TRIP-1028,HOTEL,EMP-005,Liu Wei,Product,2024-05-19,,,,,,,,Hilton,Mumbai,IN,10-Jun-2024,06/17/2024,7,,,1517.78,INR,,Approved
+TRIP-1055,GROUND,EMP-001,Priya Sharma,Sales,2024-02-16,2024-02-16,,,,,,,,,,,,,Bus,71.9,100.09,INR,,Approved
+TRIP-1058,GROUND,EMP-004,Carlos Reyes,Operations,16-Dec-2024,16-Dec-2024,,,,,,,,,,,,,Metro,0,188.44,EUR,,Approved
+TRIP-1042,AIR,EMP-002,James Whitfield,Engineering,2024-10-20,2024-10-29,CDG,PNQ,PremiumEconomy,Vistara,EK290,,,,,,,,,,1806.45,EUR,Leg 1 of 2,Approved
+TRIP-1031,GROUND,EMP-003,Anjali Mehta,Finance,06/22/2024,22-Jun-2024,,,,,,,,,,,,,Car Hire,72.8,95.4,INR,,Approved
+TRIP-1027,GROUND,EMP-005,Liu Wei,Product,2024-03-08,03/08/2024,,,,,,,,,,,,,Metro,0,135.15,INR,,Approved
+TRIP-1035,GROUND,EMP-002,James Whitfield,Engineering,24-Jul-2024,24-Jul-2024,,,,,,,,,,,,,Car Hire,39.8,159.57,,,Approved
+TRIP-1043,HOTEL,EMP-006,Sarah O'Brien,Legal,04/11/2024,,,,,,,,Premier Inn,Zurich,CH,2024-04-28,04-May-2024,6,,,629.78,USD,,Approved
+TRIP-1057,AIR,EMP-001,Priya Sharma,Sales,23-Mar-2024,04/19/2024,LGW,AMS,Economy,Lufthansa,BA181,,,,,,,,,,93.8,USD,,Approved
+TRIP-1059,HOTEL,EMP-005,Liu Wei,Product,2024-06-07,,,,,,,,Premier Inn,London Gatwick,GB,2024-06-10,2024-06-13,3,,,861.34,GBP,,Approved
+TRIP-1064,GROUND,EMP-001,Priya Sharma,Sales,07/30/2024,2024-07-30,,,,,,,,,,,,,Rail,21.7,32.31,USD,,Approved
+TRIP-1006,GROUND,EMP-001,Priya Sharma,Sales,10-Feb-2024,02/10/2024,,,,,,,,,,,,,Car Hire,31.9,118.7,,,Approved
+TRIP-1003,GROUND,EMP-005,Liu Wei,Product,05/09/2024,2024-05-09,,,,,,,,,,,,,Company Car,15.8,149.84,,,Approved
+TRIP-1054,AIR,EMP-003,Anjali Mehta,Finance,2024-03-24,2024-04-02,JFK,NRT,Economy,IndiGo,BA175,,,,,,,,,,1158.43,GBP,Leg 2 of 2,Approved
+TRIP-1043,GROUND,EMP-006,Sarah O'Brien,Legal,01-May-2024,01-May-2024,,,,,,,,,,,,,Company Car,37.7,173.94,GBP,,Approved
+TRIP-1049,GROUND,EMP-006,Sarah O'Brien,Legal,2024-10-04,04-Oct-2024,,,,,,,,,,,,,Bus,68.6,93.4,GBP,,Approved
+TRIP-1043,AIR,EMP-006,Sarah O'Brien,Legal,20-Apr-2024,04/28/2024,FRA,ZRH,Economy,Lufthansa,BA292,,,,,,,,,,47.93,USD,Leg 2 of 2,Approved
+TRIP-1047,GROUND,EMP-004,Carlos Reyes,Operations,04/27/2024,2024-04-27,,,,,,,,,,,,,Uber/Ola,25.3,42.43,GBP,,Approved
+TRIP-1054,AIR,EMP-003,Anjali Mehta,Finance,10-Mar-2024,2024-04-02,LHR,JFK,Economy,Delta,6E767,,,,,,,,,,1487.78,GBP,Leg 1 of 2,Approved
+TRIP-1052,HOTEL,EMP-006,Sarah O'Brien,Legal,29-Jul-2024,,,,,,,,Oberoi,Tokyo,JP,2024-08-20,24-Aug-2024,4,,,605.82,USD,,Approved
+TRIP-1021,GROUND,EMP-006,Sarah O'Brien,Legal,10/12/2024,12-Oct-2024,,,,,,,,,,,,,Metro,0,197.13,GBP,,Approved
+TRIP-1026,GROUND,EMP-003,Anjali Mehta,Finance,04-Feb-2024,2024-02-04,,,,,,,,,,,,,Uber/Ola,69.7,135.18,EUR,,Approved
+TRIP-1024,GROUND,EMP-003,Anjali Mehta,Finance,17-Mar-2024,17-Mar-2024,,,,,,,,,,,,,Uber/Ola,18.3,161.65,EUR,,Approved
+TRIP-1039,AIR,EMP-001,Priya Sharma,Sales,04/14/2024,04/30/2024,HYD,MAA,Business,British Airways,EK123,,,,,,,,,,245.72,INR,Leg 2 of 2,Approved
+TRIP-1033,AIR,EMP-001,Priya Sharma,Sales,2024-09-22,06-Oct-2024,BLR,AMS,Economy,British Airways,EK407,,,,,,,,,,1151.22,,Leg 2 of 2,Approved
+TRIP-1023,HOTEL,EMP-001,Priya Sharma,Sales,03/16/2024,,,,,,,,Marriott,London Gatwick,GB,2024-03-28,04/04/2024,7,,,1094.97,USD,,Approved
+TRIP-1038,GROUND,EMP-005,Liu Wei,Product,2025-01-04,2025-01-04,,,,,,,,,,,,,Company Car,46.7,115.13,GBP,,Approved
+TRIP-1002,HOTEL,EMP-002,James Whitfield,Engineering,2024-11-08,,,,,,,,Taj Hotels,Hong Kong,HK,12/07/2024,2024-12-11,4,,,573.66,EUR,,Approved
+TRIP-1023,AIR,EMP-001,Priya Sharma,Sales,14-Mar-2024,03/28/2024,MAA,LGW,Economy,Emirates,BA290,,,,,,,,,,1476.58,INR,,Approved
+TRIP-1004,GROUND,EMP-002,James Whitfield,Engineering,24-May-2024,2024-05-24,,,,,,,,,,,,,Rail,72.9,62.63,GBP,,Approved
+TRIP-1034,GROUND,EMP-002,James Whitfield,Engineering,11/17/2024,17-Nov-2024,,,,,,,,,,,,,Metro,0,168.0,GBP,,Approved
+TRIP-1058,AIR,EMP-004,Carlos Reyes,Operations,2024-11-23,12-Dec-2024,DEL,ORD,Business,Vistara,SQ559,,,,,,,,,,4476.53,INR,,Approved
+TRIP-1014,GROUND,EMP-003,Anjali Mehta,Finance,12/13/2024,2024-12-13,,,,,,,,,,,,,Company Car,42.4,111.16,USD,,Approved
+TRIP-1023,GROUND,EMP-001,Priya Sharma,Sales,04/02/2024,02-Apr-2024,,,,,,,,,,,,,Metro,0,129.22,EUR,,Approved
+TRIP-1002,AIR,EMP-002,James Whitfield,Engineering,2024-11-02,12/07/2024,JFK,HKG,Economy,Lufthansa,SQ819,,,,,,,,,,1444.25,USD,Leg 2 of 2,Approved
+TRIP-1008,GROUND,EMP-005,Liu Wei,Product,12-Aug-2024,2024-08-12,,,,,,,,,,,,,Uber/Ola,8.2,143.11,USD,,Approved
+TRIP-1053,GROUND,EMP-005,Liu Wei,Product,02/14/2024,02/14/2024,,,,,,,,,,,,,Company Car,5.4,137.12,GBP,,Approved
+TRIP-1015,GROUND,EMP-006,Sarah O'Brien,Legal,09/13/2024,13-Sep-2024,,,,,,,,,,,,,Company Car,70.4,36.24,USD,,Approved
+TRIP-1026,GROUND,EMP-003,Anjali Mehta,Finance,02/04/2024,2024-02-04,,,,,,,,,,,,,Taxi,0,100.46,EUR,,Approved
+TRIP-1029,AIR,EMP-004,Carlos Reyes,Operations,10/13/2024,11/09/2024,GRU,BKK,Economy,IndiGo,BA699,,,,,,,,,,-1866.13,EUR,,Approved
+TRIP-1045,GROUND,EMP-005,Liu Wei,Product,04/25/2024,25-Apr-2024,,,,,,,,,,,,,Uber/Ola,64.3,122.44,USD,,Approved
+TRIP-1051,HOTEL,EMP-003,Anjali Mehta,Finance,30-May-2024,,,,,,,,Marriott,Amsterdam,NL,06/06/2024,06/07/2024,1,,,131.81,EUR,,Approved
+TRIP-1034,GROUND,EMP-002,James Whitfield,Engineering,2024-11-17,2024-11-17,,,,,,,,,,,,,Metro,0,26.82,USD,,Approved
+TRIP-1015,AIR,EMP-006,Sarah O'Brien,Legal,06-Aug-2024,09/09/2024,MAA,BOM,Business,Vistara,6E870,,,,,,,,,,1317.39,INR,Leg 1 of 2,Approved
+TRIP-1061,AIR,EMP-004,Carlos Reyes,Operations,31-Aug-2024,09/09/2024,YYZ,CCU,PremiumEconomy,Qatar Airways,SQ988,,,,,,,,,,3769.67,EUR,,Approved
+TRIP-1010,AIR,EMP-004,Carlos Reyes,Operations,13-Nov-2024,2024-12-04,SIN,HKG,Economy,Air India,AI679,,,,,,,,,,505.63,USD,,Approved
+TRIP-1046,GROUND,EMP-002,James Whitfield,Engineering,2024-11-10,11/10/2024,,,,,,,,,,,,,Rail,56.8,41.37,USD,,Approved
+TRIP-1052,GROUND,EMP-006,Sarah O'Brien,Legal,23-Aug-2024,08/23/2024,,,,,,,,,,,,,Metro,0,98.92,USD,,Approved
+TRIP-1003,HOTEL,EMP-005,Liu Wei,Product,21-Apr-2024,,,,,,,,Oberoi,San Francisco,US,2024-05-07,11-May-2024,4,,,1069.7,GBP,,Approved
+TRIP-1006,GROUND,EMP-001,Priya Sharma,Sales,11-Feb-2024,2024-02-11,,,,,,,,,,,,,Company Car,48.0,51.79,INR,,Approved
+TRIP-1050,HOTEL,EMP-004,Carlos Reyes,Operations,11/02/2024,,,,,,,,Premier Inn,São Paulo,BR,2024-11-23,30-Nov-2024,7,,,607.38,GBP,,Approved
+TRIP-1018,GROUND,EMP-003,Anjali Mehta,Finance,2024-02-19,19-Feb-2024,,,,,,,,,,,,,Company Car,25.2,15.81,INR,,Approved
+TRIP-1034,GROUND,EMP-002,James Whitfield,Engineering,2024-11-17,17-Nov-2024,,,,,,,,,,,,,Taxi,0,138.91,GBP,,Approved
+TRIP-1021,GROUND,EMP-006,Sarah O'Brien,Legal,14-Oct-2024,14-Oct-2024,,,,,,,,,,,,,Car Hire,28.4,177.62,EUR,,Approved
+TRIP-1055,GROUND,EMP-001,Priya Sharma,Sales,16-Feb-2024,16-Feb-2024,,,,,,,,,,,,,Uber/Ola,23.4,162.23,INR,,Approved
+TRIP-1037,AIR,EMP-001,Priya Sharma,Sales,19-Aug-2024,09/17/2024,JFK,DEL,Economy,Singapore Airlines,BA730,,,,,,,,,,2100.57,GBP,Leg 2 of 2,Approved
+TRIP-1029,GROUND,EMP-004,Carlos Reyes,Operations,2024-11-09,11/09/2024,,,,,,,,,,,,,Bus,5.3,170.98,EUR,,Approved
+TRIP-1012,AIR,EMP-002,James Whitfield,Engineering,2024-12-14,2024-12-22,LHR,BLR,First,United,AI919,,,,,,,,,,4267.58,USD,,Approved
+TRIP-1001,AIR,EMP-006,Sarah O'Brien,Legal,2024-04-17,05/14/2024,DEL,LAX,Economy,Vistara,EK341,,,,,,,,,,2734.12,INR,,Approved
+TRIP-1059,GROUND,EMP-005,Liu Wei,Product,2024-06-12,06/12/2024,,,,,,,,,,,,,Car Hire,62.1,81.79,,,Approved
+TRIP-1017,AIR,EMP-002,James Whitfield,Engineering,2024-01-04,01/27/2024,GRU,DXB,Business,Qatar Airways,AI561,,,,,,,,,,3853.66,USD,,Approved
+TRIP-1004,GROUND,EMP-002,James Whitfield,Engineering,25-May-2024,2024-05-25,,,,,,,,,,,,,Metro,0,183.23,EUR,,Approved
+TRIP-1053,GROUND,EMP-005,Liu Wei,Product,02/13/2024,13-Feb-2024,,,,,,,,,,,,,Company Car,50.3,147.6,USD,,Approved
+TRIP-1038,AIR,EMP-005,Liu Wei,Product,12/22/2024,30-Dec-2024,JFK,MAN,Economy,Vistara,SQ428,,,,,,,,,,1143.94,USD,,Approved
+TRIP-1035,AIR,EMP-002,James Whitfield,Engineering,14-Jun-2024,2024-07-17,BOM7,ORD,First,British Airways,SQ744,,,,,,,,,,5719.49,INR,,Approved
+TRIP-1013,GROUND,EMP-005,Liu Wei,Product,2024-05-12,2024-05-12,,,,,,,,,,,,,Bus,53.8,172.75,,,Approved
+TRIP-1042,HOTEL,EMP-002,James Whitfield,Engineering,2024-10-01,,,,,,,,Oberoi,Los Angeles,US,2024-10-29,11/05/2024,7,,,2285.15,USD,,Approved
+TRIP-1015,HOTEL,EMP-006,Sarah O'Brien,Legal,08/24/2024,,,,,,,,Marriott,Tokyo,JP,09-Sep-2024,2024-09-16,7,,,1025.9,USD,,Approved
+TRIP-1039,GROUND,EMP-001,Priya Sharma,Sales,2024-05-01,2024-05-01,,,,,,,,,,,,,Car Hire,59.4,87.37,INR,,Approved
+TRIP-1024,GROUND,EMP-003,Anjali Mehta,Finance,17-Mar-2024,03/17/2024,,,,,,,,,,,,,Uber/Ola,42.1,111.62,USD,,Approved
+TRIP-1027,HOTEL,EMP-005,Liu Wei,Product,02/25/2024,,,,,,,,The Leela,Kolkata,IN,06-Mar-2024,2024-03-12,6,,,490.67,INR,,Approved
+TRIP-1009,GROUND,EMP-006,Sarah O'Brien,Legal,18-May-2024,05/18/2024,,,,,,,,,,,,,Bus,54.4,72.69,INR,,Approved
+TRIP-1054,HOTEL,EMP-003,Anjali Mehta,Finance,2024-03-12,,,,,,,,Taj Hotels,Tokyo,JP,02-Apr-2024,2024-04-08,6,,,1939.22,EUR,,Approved
+TRIP-1003,AIR,EMP-005,Liu Wei,Product,04/29/2024,05/07/2024,AMS,SFO,Economy,United,6E545,,,,,,,,,,1588.88,USD,Leg 2 of 2,Approved
+TRIP-1028,GROUND,EMP-005,Liu Wei,Product,06/14/2024,06/14/2024,,,,,,,,,,,,,Bus,14.7,77.97,INR,,Approved
+TRIP-1056,GROUND,EMP-002,James Whitfield,Engineering,25-Mar-2024,03/25/2024,,,,,,,,,,,,,Uber/Ola,44.7,127.6,EUR,,Approved
+TRIP-1059,AIR,EMP-005,Liu Wei,Product,08-May-2024,10-Jun-2024,MAA,DEL,Economy,IndiGo,BA572,,,,,,,,,,992.09,INR,Leg 1 of 2,Approved
+TRIP-1011,GROUND,EMP-003,Anjali Mehta,Finance,2024-02-10,10-Feb-2024,,,,,,,,,,,,,Company Car,62.7,23.1,USD,,Approved
+TRIP-1028,GROUND,EMP-005,Liu Wei,Product,06/12/2024,2024-06-12,,,,,,,,,,,,,Rail,68.9,180.08,INR,,Approved
+TRIP-1051,GROUND,EMP-003,Anjali Mehta,Finance,07-Jun-2024,2024-06-07,,,,,,,,,,,,,Company Car,46.9,103.6,GBP,,Approved
+TRIP-1032,AIR,EMP-002,James Whitfield,Engineering,10/19/2024,11/23/2024,GRU,SIN,Economy,Singapore Airlines,6E471,,,,,,,,,,3444.68,GBP,,Approved
+TRIP-1035,HOTEL,EMP-002,James Whitfield,Engineering,2024-07-12,,,,,,,,Marriott,Chicago,US,07/17/2024,2024-07-24,7,,,2421.67,EUR,,Approved
+TRIP-1062,GROUND,EMP-006,Sarah O'Brien,Legal,2024-02-14,2024-02-14,,,,,,,,,,,,,Uber/Ola,60.2,135.83,EUR,,Approved
+TRIP-1032,GROUND,EMP-002,James Whitfield,Engineering,27-Nov-2024,11/27/2024,,,,,,,,,,,,,Rail,79.5,159.78,EUR,,Approved
+TRIP-1034,AIR,EMP-002,James Whitfield,Engineering,2024-10-19,11/17/2024,BOM,ZRH,Economy,United,6E205,,,,,,,,,,779.61,INR,Leg 2 of 2,Approved
+TRIP-1047,AIR,EMP-004,Carlos Reyes,Operations,2024-03-22,2024-04-24,DXB,HKG,Economy,Emirates,BA178,,,,,,,,,,880.95,EUR,,Approved
+TRIP-1060,AIR,EMP-005,Liu Wei,Product,05/31/2024,2024-06-10,BOM,PNQ,Business,Singapore Airlines,BA911,,,,,,,,,,17.6,INR,45-min hop — business class flagged for review,Approved
+TRIP-1064,GROUND,EMP-001,Priya Sharma,Sales,2024-07-25,2024-07-25,,,,,,,,,,,,,Company Car,38.4,112.56,GBP,,Approved
+TRIP-1019,HOTEL,EMP-003,Anjali Mehta,Finance,2024-11-22,,,,,,,,Premier Inn,Los Angeles,US,17-Dec-2024,21-Dec-2024,4,,,748.33,GBP,,Approved
+TRIP-1034,AIR,EMP-002,James Whitfield,Engineering,2024-10-27,17-Nov-2024,DEL,BOM,Economy,United,BA817,,,,,,,,,,876.37,INR,Leg 1 of 2,Approved
+TRIP-1066,PERDIEM,EMP-005,Liu Wei,,,03-Dec-2024,,,,,,,,,,,,,,,50.69,USD,Per diem allowance — not a travel emission,
+TRIP-1017,GROUND,EMP-002,James Whitfield,Engineering,2024-01-27,27-Jan-2024,,,,,,,,,,,,,Car Hire,75.4,70.75,GBP,,Approved
+TRIP-1025,GROUND,EMP-004,Carlos Reyes,Operations,12/18/2024,18-Dec-2024,,,,,,,,,,,,,Bus,56.3,27.09,INR,,Approved
+TRIP-1052,GROUND,EMP-006,Sarah O'Brien,Legal,23-Aug-2024,2024-08-23,,,,,,,,,,,,,Rail,52.8,123.01,EUR,,Approved
+TRIP-1053,HOTEL,EMP-005,Liu Wei,Product,04-Feb-2024,,,,,,,,Hilton,London,GB,11-Feb-2024,2024-02-17,6,,,1278.48,GBP,,Approved
+TRIP-1049,AIR,EMP-006,Sarah O'Brien,Legal,09/25/2024,10/03/2024,GRU,CCU,Economy,Vistara,BA450,,,,,,,,,,1786.55,GBP,Leg 1 of 2,Approved
+TRIP-1053,AIR,EMP-005,Liu Wei,Product,03-Feb-2024,2024-02-11,DEL,ZRH,Economy,Emirates,AI470,,,,,,,,,,1302.86,INR,Leg 1 of 2,Approved
+TRIP-1052,AIR,EMP-006,Sarah O'Brien,Legal,22-Jul-2024,20-Aug-2024,DXB,BKK,First,Singapore Airlines,SQ762,,,,,,,,,,5086.95,EUR,Leg 1 of 2,Approved
+TRIP-1059,GROUND,EMP-005,Liu Wei,Product,06/10/2024,2024-06-10,,,,,,,,,,,,,Bus,36.8,129.61,EUR,,Approved
+TRIP-1054,AIR,EMP-003,Anjali Mehta,Finance,10-Mar-2024,2024-04-02,LHR,JFK,Economy,Delta,6E767,,,,,,,,,,1606.8,GBP,Amended booking — fare difference,Approved
+TRIP-1025,AIR,EMP-004,Carlos Reyes,Operations,2024-11-19,12/16/2024,AMS,MAA,Business,Lufthansa,EK977,,,,,,,,,,2313.9,EUR,,Approved
+TRIP-1024,HOTEL,EMP-003,Anjali Mehta,Finance,03/02/2024,,,,,,,,Taj Hotels,Chicago,US,03/16/2024,17-Mar-2024,1,,,91.99,GBP,,Approved
+TRIP-1015,AIR,EMP-006,Sarah O'Brien,Legal,16-Aug-2024,09-Sep-2024,BOM,NRT,Business,United,6E532,,,,,,,,,,1517.53,,Leg 2 of 2,Approved
+TRIP-1022,HOTEL,EMP-004,Carlos Reyes,Operations,2024-08-24,,,,,,,,Ibis,Kolkata,IN,06-Sep-2024,2024-09-09,3,,,352.06,INR,,Approved
+TRIP-1045,AIR,EMP-005,Liu Wei,Product,21-Mar-2024,2024-04-25,DOH,SFO,Economy,Delta,6E142,,,,,,,,,,1132.45,USD,,Approved
+TRIP-1050,GROUND,EMP-004,Carlos Reyes,Operations,25-Nov-2024,11/25/2024,,,,,,,,,,,,,Bus,20.2,104.69,GBP,,Approved
+TRIP-1033,GROUND,EMP-001,Priya Sharma,Sales,2024-10-08,08-Oct-2024,,,,,,,,,,,,,Bus,55.5,167.6,EUR,,Approved
+TRIP-1019,GROUND,EMP-003,Anjali Mehta,Finance,21-Dec-2024,2024-12-21,,,,,,,,,,,,,Uber/Ola,25.4,102.72,USD,,Approved
+TRIP-1013,AIR,EMP-005,Liu Wei,Product,2024-04-03,2024-05-07,MAN,CDG,Business,British Airways,SQ266,,,,,,,,,,164.32,USD,,Approved
+TRIP-1016,GROUND,EMP-003,Anjali Mehta,Finance,2024-05-14,05/14/2024,,,,,,,,,,,,,Rail,48.4,134.38,EUR,,Approved
+TRIP-1005,GROUND,EMP-005,Liu Wei,Product,04/02/2024,02-Apr-2024,,,,,,,,,,,,,Uber/Ola,40.7,112.4,GBP,,Approved
+TRIP-1005,AIR,EMP-005,Liu Wei,Product,02-Mar-2024,03/30/2024,DOH,YYZ,Economy,Singapore Airlines,6E499,,,,,,,,,,1148.93,GBP,,Approved
+TRIP-1045,HOTEL,EMP-005,Liu Wei,Product,04/07/2024,,,,,,,,Hyatt,San Francisco,US,04/25/2024,05/02/2024,7,,,928.76,GBP,,Approved
+TRIP-1014,AIR,EMP-003,Anjali Mehta,Finance,11-Nov-2024,12/12/2024,ORD,AMS,Business,Lufthansa,EK393,,,,,,,,,,1095.4,USD,,Approved
+TRIP-1041,GROUND,EMP-006,Sarah O'Brien,Legal,2024-06-24,06/24/2024,,,,,,,,,,,,,Bus,22.2,189.01,INR,,Approved
+TRIP-1030,AIR,EMP-004,Carlos Reyes,Operations,01-Oct-2024,09-Nov-2024,BOM,PNQ,Business,Vistara,AI325,,,,,,,,,,98.05,INR,45-min hop — business class flagged for review,Approved
+TRIP-1058,HOTEL,EMP-004,Carlos Reyes,Operations,2024-11-28,,,,,,,,Taj Hotels,Chicago,US,12/12/2024,2024-12-18,6,,,948.26,GBP,,Approved
+TRIP-1048,GROUND,EMP-003,Anjali Mehta,Finance,04-Apr-2024,04/04/2024,,,,,,,,,,,,,Company Car,63.6,136.51,GBP,,Approved
+TRIP-1038,HOTEL,EMP-005,Liu Wei,Product,2024-12-15,,,,,,,,IHG,Manchester,GB,30-Dec-2024,01/04/2025,5,,,1351.45,GBP,,Approved
+TRIP-1022,GROUND,EMP-004,Carlos Reyes,Operations,2024-09-09,2024-09-09,,,,,,,,,,,,,Bus,28.3,108.61,INR,,Approved
+TRIP-1048,PERDIEM,EMP-003,Anjali Mehta,Finance,03/09/2024,2024-04-04,SIN,AMS,Economy,Singapore Airlines,AI395,,,,,,,,,,1325.39,EUR,Per diem,Approved
+TRIP-1065,PERDIEM,EMP-006,Sarah O'Brien,,,11/22/2024,,,,,,,,,,,,,,,41.25,USD,Per diem allowance — not a travel emission,
+TRIP-1007,GROUND,EMP-004,Carlos Reyes,Operations,06-Jun-2024,2024-06-06,,,,,,,,,,,,,Taxi,0,146.82,GBP,,Approved
+TRIP-1039,GROUND,EMP-001,Priya Sharma,Sales,05/02/2024,05/02/2024,,,,,,,,,,,,,Bus,60.2,79.13,INR,,Approved
+TRIP-1059,GROUND,EMP-005,Liu Wei,Product,11-Jun-2024,2024-06-11,,,,,,,,,,,,,Metro,0,136.22,USD,,Approved
+TRIP-1025,GROUND,EMP-004,Carlos Reyes,Operations,12/18/2024,2024-12-18,,,,,,,,,,,,,Car Hire,53.2,123.09,INR,,Approved
+TRIP-1008,GROUND,EMP-005,Liu Wei,Product,08/11/2024,2024-08-11,,,,,,,,,,,,,Car Hire,34.2,125.82,GBP,,Approved
+TRIP-1044,GROUND,EMP-001,Priya Sharma,Sales,2024-08-29,08/29/2024,,,,,,,,,,,,,Bus,73.4,25.48,EUR,,Approved
+TRIP-1042,GROUND,EMP-002,James Whitfield,Engineering,11/05/2024,05-Nov-2024,,,,,,,,,,,,,Taxi,0,32.37,EUR,,Approved
+TRIP-1067,PERDIEM,EMP-004,Carlos Reyes,,,2024-03-07,,,,,,,,,,,,,,,66.83,USD,Per diem allowance — not a travel emission,
+TRIP-1010,GROUND,EMP-004,Carlos Reyes,Operations,12/04/2024,12/04/2024,,,,,,,,,,,,,Car Hire,38.8,18.56,GBP,,Approved
+TRIP-1011,HOTEL,EMP-003,Anjali Mehta,Finance,2024-02-01,,,,,,,,Novotel,Amsterdam,NL,2024-02-10,02/15/2024,5,,,1723.0,USD,,Approved
+TRIP-1004,AIR,EMP-002,James Whitfield,Engineering,04/26/2024,05/22/2024,SFO,YYZ,Business,IndiGo,6E669,,,,,,,,,,1466.18,USD,,Approved
+TRIP-1026,GROUND,EMP-003,Anjali Mehta,Finance,02/05/2024,05-Feb-2024,,,,,,,,,,,,,Company Car,51.8,189.22,USD,,Approved
+TRIP-1052,GROUND,EMP-006,Sarah O'Brien,Legal,22-Aug-2024,22-Aug-2024,,,,,,,,,,,,,Uber/Ola,46.2,14.99,USD,,Approved
+TRIP-1062,GROUND,EMP-006,Sarah O'Brien,Legal,2024-02-13,02/13/2024,,,,,,,,,,,,,Company Car,65.4,45.18,GBP,,Approved
+TRIP-1057,HOTEL,EMP-001,Priya Sharma,Sales,03/22/2024,,,,,,,,Novotel,Amsterdam,NL,04/19/2024,04/24/2024,5,,,1693.09,GBP,,Approved
+TRIP-1029,GROUND,EMP-004,Carlos Reyes,Operations,11/09/2024,11/09/2024,,,,,,,,,,,,,Metro,0,99.02,EUR,,Approved
+TRIP-1017,HOTEL,EMP-002,James Whitfield,Engineering,2024-01-05,,,,,,,,Novotel,Dubai,AE,27-Jan-2024,01/28/2024,1,,,96.86,EUR,,Approved
+TRIP-1042,GROUND,EMP-002,James Whitfield,Engineering,04-Nov-2024,2024-11-04,,,,,,,,,,,,,Car Hire,58.9,75.83,EUR,,Approved
+TRIP-1002,GROUND,EMP-002,James Whitfield,Engineering,12/07/2024,2024-12-07,,,,,,,,,,,,,Car Hire,20.4,143.11,EUR,,Approved
+TRIP-1015,GROUND,EMP-006,Sarah O'Brien,Legal,09/15/2024,2024-09-15,,,,,,,,,,,,,Taxi,0,29.71,GBP,,Approved
+TRIP-1029,GROUND,EMP-004,Carlos Reyes,Operations,09-Nov-2024,09-Nov-2024,,,,,,,,,,,,,Metro,0,150.55,GBP,,Approved
+TRIP-1033,AIR,EMP-001,Priya Sharma,Sales,03-Sep-2024,2024-10-06,LAX,BLR,Economy,Vistara,EK503,,,,,,,,,,1282.57,USD,Leg 1 of 2,Approved
+TRIP-1050,AIR,EMP-004,Carlos Reyes,Operations,2024-10-24,11/23/2024,ZRH,GRU,Business,Vistara,SQ234,,,,,,,,,,2679.79,EUR,,Approved
+TRIP-1016,AIR,EMP-003,Anjali Mehta,Finance,04/09/2024,2024-05-14,HYD,MUC,Economy,Singapore Airlines,BA855,,,,,,,,,,1402.83,INR,,Approved
+TRIP-1031,AIR,EMP-003,Anjali Mehta,Finance,30-May-2024,06/21/2024,HKG,BOM,Economy,Delta,6E119,,,,,,,,,,848.48,USD,,Approved
+TRIP-1040,AIR,EMP-005,Liu Wei,Product,2024-09-19,2024-10-10,LAX,MAA,Economy,Delta,SQ838,,,,,,,,,,2292.08,EUR,,Approved
+TRIP-1024,GROUND,EMP-003,Anjali Mehta,Finance,17-Mar-2024,03/17/2024,,,,,,,,,,,,,Rail,45.6,74.43,GBP,,Approved
+TRIP-1037,GROUND,EMP-001,Priya Sharma,Sales,2024-09-18,09/18/2024,,,,,,,,,,,,,Rail,39.4,186.46,INR,,Approved
+TRIP-1059,AIR,EMP-005,Liu Wei,Product,2024-05-20,06/10/2024,DEL,LGW,Economy,Qatar Airways,AI985,,,,,,,,,,614.12,INR,Leg 2 of 2,Approved
+TRIP-1027,GROUND,EMP-005,Liu Wei,Product,06-Mar-2024,2024-03-06,,,,,,,,,,,,,Uber/Ola,40.8,52.13,INR,,Approved
+TRIP-1018,AIR,EMP-003,Anjali Mehta,Finance,2024-01-24,02/15/2024,LHR,BOM,Economy,Qatar Airways,EK397,,,,,,,,,,1110.28,GBP,,Approved
+TRIP-1009,GROUND,EMP-006,Sarah O'Brien,Legal,05/17/2024,17-May-2024,,,,,,,,,,,,,Metro,0,74.81,INR,,Approved
+TRIP-1063,GROUND,EMP-006,Sarah O'Brien,Legal,2024-02-28,02/28/2024,,,,,,,,,,,,,Company Car,60.8,138.53,INR,,Approved
+TRIP-1033,GROUND,EMP-001,Priya Sharma,Sales,10/07/2024,10/07/2024,,,,,,,,,,,,,Taxi,0,10.38,,,Approved
+TRIP-1013,GROUND,EMP-005,Liu Wei,Product,2024-05-11,11-May-2024,,,,,,,,,,,,,Bus,72.2,66.96,EUR,,Approved
+TRIP-1039,AIR,EMP-001,Priya Sharma,Sales,17-Mar-2024,2024-04-30,BLR,HYD,Business,Emirates,BA749,,,,,,,,,,72.49,INR,Leg 1 of 2,Approved
+TRIP-1031,GROUND,EMP-003,Anjali Mehta,Finance,2024-06-23,06/23/2024,,,,,,,,,,,,,Taxi,0,104.78,INR,,Approved
+TRIP-1008,AIR,EMP-005,Liu Wei,Product,07/18/2024,08-Aug-2024,BOM,BKK,Economy,United,AI582,,,,,,,,,,421.19,INR,,Approved
+TRIP-1003,GROUND,EMP-005,Liu Wei,Product,08-May-2024,05/08/2024,,,,,,,,,,,,,Company Car,9.0,160.97,USD,,Approved
+TRIP-1027,GROUND,EMP-005,Liu Wei,Product,2024-03-09,2024-03-09,,,,,,,,,,,,,Taxi,0,174.66,,,Approved
+TRIP-1056,GROUND,EMP-002,James Whitfield,Engineering,25-Mar-2024,25-Mar-2024,,,,,,,,,,,,,Rail,31.1,154.23,USD,,Approved
+TRIP-1064,HOTEL,EMP-001,Priya Sharma,Sales,2024-06-29,,,,,,,,Taj Hotels,Los Angeles,US,07/24/2024,2024-07-31,7,,,1359.77,EUR,,Approved
+TRIP-1006,AIR,EMP-001,Priya Sharma,Sales,21-Jan-2024,08-Feb-2024,HKG9,MUC,Business,United,EK406,,,,,,,,,,1747.99,GBP,Leg 1 of 2,Approved
+TRIP-1043,GROUND,EMP-006,Sarah O'Brien,Legal,04/29/2024,29-Apr-2024,,,,,,,,,,,,,Uber/Ola,64.9,112.7,USD,,Approved
+TRIP-1008,HOTEL,EMP-005,Liu Wei,Product,2024-07-23,,,,,,,,The Leela,Bangkok,TH,2024-08-08,08/13/2024,5,,,1619.31,EUR,,Approved
+TRIP-1007,HOTEL,EMP-004,Carlos Reyes,Operations,05/13/2024,,,,,,,,Hyatt,Dubai,AE,06/05/2024,11-Jun-2024,6,,,1129.92,EUR,,Approved
+TRIP-1049,AIR,EMP-006,Sarah O'Brien,Legal,2024-09-08,03-Oct-2024,CCU,FRA,Economy,Lufthansa,BA735,,,,,,,,,,1077.74,INR,Leg 2 of 2,Approved
+TRIP-1061,GROUND,EMP-004,Carlos Reyes,Operations,10-Sep-2024,2024-09-10,,,,,,,,,,,,,Metro,0,49.2,INR,,Approved
+TRIP-1037,HOTEL,EMP-001,Priya Sharma,Sales,09-Sep-2024,,,,,,,,Oberoi,Delhi,IN,17-Sep-2024,18-Sep-2024,1,,,323.76,INR,,Approved
+TRIP-1007,AIR,EMP-004,Carlos Reyes,Operations,05/11/2024,05-Jun-2024,AMD,DXB,PremiumEconomy,Lufthansa,AI150,,,,,,,,,,313.18,INR,,Approved
+TRIP-1017,GROUND,EMP-002,James Whitfield,Engineering,01/27/2024,27-Jan-2024,,,,,,,,,,,,,Taxi,0,161.16,EUR,,Approved
+TRIP-1016,GROUND,EMP-003,Anjali Mehta,Finance,16-May-2024,05/16/2024,,,,,,,,,,,,,Bus,62.1,109.39,GBP,,Approved
+TRIP-1051,GROUND,EMP-003,Anjali Mehta,Finance,07-Jun-2024,07-Jun-2024,,,,,,,,,,,,,Bus,42.6,53.98,GBP,,Approved
+TRIP-1041,AIR,EMP-006,Sarah O'Brien,Legal,2024-06-02,2024-06-24,BOM,CCU,Economy,Lufthansa,6E525,,,,,,,,,,250.92,INR,,Approved
+TRIP-1038,GROUND,EMP-005,Liu Wei,Product,2025-01-04,2025-01-04,,,,,,,,,,,,,Bus,13.9,146.17,GBP,,Approved
+TRIP-1011,AIR,EMP-003,Anjali Mehta,Finance,27-Dec-2023,10-Feb-2024,DEL,AMS,Economy,Qatar Airways,AI414,,,,,,,,,,856.63,INR,,Approved
+TRIP-1013,GROUND,EMP-005,Liu Wei,Product,07-May-2024,2024-05-07,,,,,,,,,,,,,Uber/Ola,35.8,123.49,USD,,Approved
+TRIP-1040,HOTEL,EMP-005,Liu Wei,Product,2024-10-02,,,,,,,,Oberoi,Chennai,IN,10-Oct-2024,2024-10-16,6,,,2004.28,INR,,Approved
+TRIP-1046,GROUND,EMP-002,James Whitfield,Engineering,2024-11-14,11/14/2024,,,,,,,,,,,,,Bus,29.6,61.29,GBP,,Approved
+TRIP-1005,GROUND,EMP-005,Liu Wei,Product,2024-04-02,2024-04-02,,,,,,,,,,,,,Taxi,0,78.12,USD,,Approved
+TRIP-1053,GROUND,EMP-005,Liu Wei,Product,16-Feb-2024,16-Feb-2024,,,,,,,,,,,,,Uber/Ola,32.0,189.78,USD,,Approved
+TRIP-1057,GROUND,EMP-001,Priya Sharma,Sales,2024-04-22,22-Apr-2024,,,,,,,,,,,,,Taxi,0,195.05,EUR,,Approved
+TRIP-1021,GROUND,EMP-006,Sarah O'Brien,Legal,16-Oct-2024,2024-10-16,,,,,,,,,,,,,Company Car,74.2,179.36,USD,,Approved
+TRIP-1037,AIR,EMP-001,Priya Sharma,Sales,2024-09-03,09/17/2024,LHR,JFK,Economy,British Airways,EK547,,,,,,,,,,711.96,GBP,Leg 1 of 2,Approved
+TRIP-1010,GROUND,EMP-004,Carlos Reyes,Operations,05-Dec-2024,12/05/2024,,,,,,,,,,,,,Company Car,59.1,129.67,EUR,,Approved
+TRIP-1006,HOTEL,EMP-001,Priya Sharma,Sales,2024-01-29,,,,,,,,Novotel,Pune,IN,02/08/2024,14-Feb-2024,0,,,1552.41,INR,,Approved
+TRIP-1014,GROUND,EMP-003,Anjali Mehta,Finance,12-Dec-2024,12/12/2024,,,,,,,,,,,,,Metro,0,159.04,GBP,,Approved
+TRIP-1048,HOTEL,EMP-003,Anjali Mehta,Finance,03/30/2024,,,,,,,,The Leela,Amsterdam,NL,2024-04-04,04/09/2024,5,,,1598.49,USD,,Approved
+TRIP-1025,GROUND,EMP-004,Carlos Reyes,Operations,17-Dec-2024,17-Dec-2024,,,,,,,,,,,,,Rail,33.1,122.71,INR,,Approved
+TRIP-1020,AIR,EMP-003,Anjali Mehta,Finance,19-Nov-2024,17-Dec-2024,BOM,PNQ,Business,Lufthansa,BA882,,,,,,,,,,40.01,INR,45-min hop — business class flagged for review,Approved
+TRIP-1023,GROUND,EMP-001,Priya Sharma,Sales,28-Mar-2024,28-Mar-2024,,,,,,,,,,,,,Metro,0,164.27,EUR,,Approved
