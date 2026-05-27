@@ -20,6 +20,7 @@ urlpatterns = [
     path('records/<uuid:pk>/approve/', views.record_approve, name='record_approve'),
     path('records/<uuid:pk>/reject/', views.record_reject, name='record_reject'),
     path('records/summary/', views.dashboard_summary, name='dashboard_summary'),
+    path('records/exports/', views.list_export_logs, name='list_export_logs'),
     path('records/export/', views.records_export, name='records_export'),
 
     # Robust Authentication endpoints

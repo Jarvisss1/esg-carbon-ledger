@@ -11,6 +11,7 @@ from openpyxl import load_workbook
 from decimal import Decimal
 from django.db import transaction
 from django.contrib.auth.models import User
+import uuid
 
 from .models import Tenant, RawPayload, Airport, EmissionRecord, AuditLog, IngestionBatch
 from .column_resolver import resolve_columns, fuzzy_resolve, _ALIAS_TO_CANONICAL
@@ -134,6 +135,43 @@ def haversine_distance(lat1, lon1, lat2, lon2):
     c = 2 * math.asin(math.sqrt(a))
     return R * c
 
+class BulkIngestionContext:
+    def __init__(self):
+        self.records = []
+        self.audit_logs = []
+        self.orig_record_create = None
+        self.orig_audit_create = None
+
+    def __enter__(self):
+        self.orig_record_create = EmissionRecord.objects.create
+        self.orig_audit_create = AuditLog.objects.create
+
+        def custom_record_create(*args, **kwargs):
+            obj = EmissionRecord(*args, **kwargs)
+            if not obj.id:
+                obj.id = uuid.uuid4()
+            self.records.append(obj)
+            return obj
+
+        def custom_audit_create(*args, **kwargs):
+            obj = AuditLog(*args, **kwargs)
+            self.audit_logs.append(obj)
+            return obj
+
+        EmissionRecord.objects.create = custom_record_create
+        AuditLog.objects.create = custom_audit_create
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        EmissionRecord.objects.create = self.orig_record_create
+        AuditLog.objects.create = self.orig_audit_create
+
+        if exc_type is None:
+            if self.records:
+                EmissionRecord.objects.bulk_create(self.records)
+            if self.audit_logs:
+                AuditLog.objects.bulk_create(self.audit_logs)
+
 def parse_payload(raw_payload_id) -> dict:
     raw = RawPayload.objects.get(id=raw_payload_id)
     content = raw.payload_content
@@ -146,7 +184,7 @@ def parse_payload(raw_payload_id) -> dict:
     # Dynamic seed of expanded airport coordinate database
     auto_seed_airports()
     
-    with transaction.atomic():
+    with transaction.atomic(), BulkIngestionContext() as bulk:
         locked_exist = EmissionRecord.objects.filter(raw_payload=raw, is_locked=True).exists()
         if locked_exist:
             raise exceptions.ValidationError("Cannot re-parse a raw payload that has already generated locked audit records.")
@@ -199,7 +237,7 @@ def parse_payload(raw_payload_id) -> dict:
             records_created, errors = parse_navan_json(raw, batch, content, tenant)
 
         # ── STATISTICAL OUTLIER DETECTION ACROSS BATCH (z-score > 3) ──
-        records = list(EmissionRecord.objects.filter(raw_payload=raw))
+        records = bulk.records
         positive_vals = [float(r.normalized_value) for r in records if r.normalized_value and r.normalized_value > 0]
         
         if len(positive_vals) >= 5:
@@ -219,7 +257,6 @@ def parse_payload(raw_payload_id) -> dict:
                                 errs.append(msg)
                             r.validation_errors = errs
                             r.flag_reason = "; ".join(errs)
-                            r.save()
 
         # Update IngestionBatch details
         batch.row_count = len(records)

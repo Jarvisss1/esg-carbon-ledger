@@ -102,7 +102,7 @@ export const ingestionAPI = {
   batches: () => api.get('/api/batches/'),
 
   // GET  /api/batches/{id}/records/
-  batchDetail: (id) => api.get(`/api/batches/${id}/records/`).then(res => {
+  batchDetail: (id, params) => api.get(`/api/batches/${id}/records/`, { params }).then(res => {
     if (res.data && Array.isArray(res.data)) {
       res.data = res.data.map(mapRecord);
     } else if (res.data && Array.isArray(res.data.results)) {
@@ -133,11 +133,8 @@ export const exportAPI = {
     batch_id: data.batch_id,
   }),
 
-  // Export logs – GET /api/records/summary/ doesn't give logs; use activities export log endpoint
-  // Fallback: we use /api/records/export/ in POST-only mode, so we mock this for now
-  logs: () => api.get('/api/records/summary/').then(r => ({
-    data: [], // ExportLog listing not yet wired as a GET endpoint
-  })).catch(() => ({ data: [] })),
+  // GET /api/records/exports/
+  logs: () => api.get('/api/records/exports/'),
 };
 
 // ─── Dashboard ─────────────────────────────────────────────────────────────────

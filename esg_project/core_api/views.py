@@ -15,6 +15,18 @@ from rest_framework import status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.pagination import PageNumberPagination
 import pandas as pd
+from django.core.cache import cache
+
+def get_cache_key(prefix, request):
+    # Unique cache key for each request parameters list
+    params = sorted(request.query_params.items())
+    params_str = "&".join(f"{k}={v}" for k, v in params)
+    return f"esg_{prefix}_{params_str}"
+
+def invalidate_esg_cache():
+    # Invalidate all local caches when updates happen
+    cache.clear()
+
 
 from .models import Tenant, RawPayload, Airport, EmissionRecord, AuditLog, IngestionBatch, ExportLog
 from .serializers import TenantSerializer, RawPayloadSerializer, EmissionRecordSerializer, AuditLogSerializer, IngestionBatchSerializer, ExportLogSerializer
@@ -68,6 +80,7 @@ def ingest_raw_payload(request):
             
             # Run parser immediately
             parse_stats = parse_payload(raw_payload.id)
+            invalidate_esg_cache()
             
         return Response({
             "message": "Raw payload ingested and processed successfully.",
@@ -88,6 +101,11 @@ class StandardResultsSetPagination(PageNumberPagination):
     max_page_size = 1000
 
 def _list_activities_impl(request):
+    cache_key = get_cache_key("activities", request)
+    cached_data = cache.get(cache_key)
+    if cached_data is not None:
+        return Response(cached_data, status=status.HTTP_200_OK)
+
     activities = EmissionRecord.objects.all().order_by('-start_date')
     
     tenant_id = request.query_params.get('tenant_id')
@@ -108,6 +126,37 @@ def _list_activities_impl(request):
     if suspicious_filter:
         activities = activities.filter(is_suspicious=(suspicious_filter.lower() == 'true'))
 
+    # Support frontend-specific query parameters
+    approved_filter = request.query_params.get('approved')
+    if approved_filter is not None:
+        if approved_filter.lower() == 'true':
+            activities = activities.filter(workflow_status__in=['APPROVED', 'LOCKED_FOR_AUDIT'])
+        elif approved_filter.lower() == 'false':
+            activities = activities.exclude(workflow_status__in=['APPROVED', 'LOCKED_FOR_AUDIT'])
+
+    excluded_filter = request.query_params.get('excluded')
+    if excluded_filter is not None:
+        if excluded_filter.lower() == 'true':
+            activities = activities.filter(workflow_status='REJECTED')
+        elif excluded_filter.lower() == 'false':
+            activities = activities.exclude(workflow_status='REJECTED')
+
+    is_outlier_filter = request.query_params.get('is_outlier')
+    if is_outlier_filter is not None:
+        activities = activities.filter(is_suspicious=(is_outlier_filter.lower() == 'true'))
+
+    search_query = request.query_params.get('search')
+    if search_query and search_query.strip():
+        q = search_query.strip()
+        from django.db.models import Q
+        activities = activities.filter(
+            Q(unique_transaction_id__icontains=q) |
+            Q(resolved_facility_id__icontains=q) |
+            Q(resolved_facility_country__icontains=q) |
+            Q(analyst_notes__icontains=q) |
+            Q(scope_category__icontains=q)
+        )
+
     # Check if page is requested or if pagination is preferred
     page_param = request.query_params.get('page')
     if page_param is not None or request.query_params.get('page_size') is not None:
@@ -115,9 +164,12 @@ def _list_activities_impl(request):
         page = paginator.paginate_queryset(activities, request)
         if page is not None:
             serializer = EmissionRecordSerializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
+            res = paginator.get_paginated_response(serializer.data)
+            cache.set(cache_key, res.data, 300)
+            return res
 
     serializer = EmissionRecordSerializer(activities, many=True)
+    cache.set(cache_key, serializer.data, 300)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
@@ -239,6 +291,7 @@ def activity_detail(request, pk):
                     new_values=new_values,
                     reason=notes
                 )
+            invalidate_esg_cache()
 
         serializer = EmissionRecordSerializer(activity)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -320,6 +373,8 @@ def bulk_action(request):
             except (EmissionRecord.DoesNotExist, ValidationError):
                 skipped_records.append({"id": record_id, "reason": "Invalid UUID or Not Found"})
 
+        invalidate_esg_cache()
+
     return Response({
         "message": f"Bulk action '{action}' completed.",
         "processed_count": len(updated_records),
@@ -357,6 +412,11 @@ def list_batches(request):
     """
     Returns a list of all IngestionBatch runs.
     """
+    cache_key = get_cache_key("batches", request)
+    cached_data = cache.get(cache_key)
+    if cached_data is not None:
+        return Response(cached_data, status=status.HTTP_200_OK)
+
     tenant_id = request.query_params.get('tenant_id')
     if not tenant_id:
         first_tenant = Tenant.objects.first()
@@ -366,6 +426,7 @@ def list_batches(request):
     if tenant_id:
         batches = batches.filter(tenant_id=tenant_id)
     serializer = IngestionBatchSerializer(batches, many=True)
+    cache.set(cache_key, serializer.data, 300)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
@@ -373,13 +434,66 @@ def batch_records(request, pk):
     """
     Returns paginated/filtered list of EmissionRecord rows created in a specific batch.
     """
+    cache_key = f"esg_batch_records_{pk}_{get_cache_key('', request)}"
+    cached_data = cache.get(cache_key)
+    if cached_data is not None:
+        return Response(cached_data, status=status.HTTP_200_OK)
+
     try:
         batch = IngestionBatch.objects.get(id=pk)
     except (IngestionBatch.DoesNotExist, ValidationError):
         return Response({"error": "IngestionBatch not found."}, status=status.HTTP_404_NOT_FOUND)
         
     records = batch.normalized_activities.all().order_by('-start_date')
+    
+    # Support standard filters
+    status_filter = request.query_params.get('workflow_status')
+    if status_filter:
+        records = records.filter(workflow_status=status_filter)
+
+    approved_filter = request.query_params.get('approved')
+    if approved_filter is not None:
+        if approved_filter.lower() == 'true':
+            records = records.filter(workflow_status__in=['APPROVED', 'LOCKED_FOR_AUDIT'])
+        elif approved_filter.lower() == 'false':
+            records = records.exclude(workflow_status__in=['APPROVED', 'LOCKED_FOR_AUDIT'])
+
+    excluded_filter = request.query_params.get('excluded')
+    if excluded_filter is not None:
+        if excluded_filter.lower() == 'true':
+            records = records.filter(workflow_status='REJECTED')
+        elif excluded_filter.lower() == 'false':
+            records = records.exclude(workflow_status='REJECTED')
+
+    is_outlier_filter = request.query_params.get('is_outlier')
+    if is_outlier_filter is not None:
+        records = records.filter(is_suspicious=(is_outlier_filter.lower() == 'true'))
+
+    search_query = request.query_params.get('search')
+    if search_query and search_query.strip():
+        q = search_query.strip()
+        from django.db.models import Q
+        records = records.filter(
+            Q(unique_transaction_id__icontains=q) |
+            Q(resolved_facility_id__icontains=q) |
+            Q(resolved_facility_country__icontains=q) |
+            Q(analyst_notes__icontains=q) |
+            Q(scope_category__icontains=q)
+        )
+
+    # Check if page is requested or if pagination is preferred
+    page_param = request.query_params.get('page')
+    if page_param is not None or request.query_params.get('page_size') is not None:
+        paginator = StandardResultsSetPagination()
+        page = paginator.paginate_queryset(records, request)
+        if page is not None:
+            serializer = EmissionRecordSerializer(page, many=True)
+            res = paginator.get_paginated_response(serializer.data)
+            cache.set(cache_key, res.data, 300)
+            return res
+            
     serializer = EmissionRecordSerializer(records, many=True)
+    cache.set(cache_key, serializer.data, 300)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
@@ -468,6 +582,7 @@ def batch_upload(request):
             )
             
             parse_stats = parse_payload(raw_payload.id)
+            invalidate_esg_cache()
             
         return Response({
             "message": "File batch uploaded and processed successfully.",
@@ -525,6 +640,7 @@ def record_approve(request, pk):
             reason="Analyst signed off and audit-locked the emission record."
         )
         
+    invalidate_esg_cache()
     serializer = EmissionRecordSerializer(activity)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -563,6 +679,7 @@ def record_reject(request, pk):
             reason=reason
         )
         
+    invalidate_esg_cache()
     serializer = EmissionRecordSerializer(activity)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -571,6 +688,11 @@ def dashboard_summary(request):
     """
     Returns aggregated emissions (kgCO2e) grouped by Scope (1/2/3) and Category.
     """
+    cache_key = "esg_dashboard_summary"
+    cached_data = cache.get(cache_key)
+    if cached_data is not None:
+        return Response(cached_data, status=status.HTTP_200_OK)
+
     scope_aggregation = {}
     categories_aggregation = {}
     
@@ -587,17 +709,20 @@ def dashboard_summary(request):
         cat = r.category or "unknown"
         categories_aggregation[cat] = categories_aggregation.get(cat, 0.0) + val
         
-    return Response({
+    res_data = {
         "total_emissions_kgco2e": sum(scope_aggregation.values()),
         "by_scope": scope_aggregation,
         "by_category": categories_aggregation
-    }, status=status.HTTP_200_OK)
+    }
+    cache.set(cache_key, res_data, 300)
+    return Response(res_data, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 def records_export(request):
     """
     Exports approved records to CSV or XLSX format, either as direct download or via email.
-    Logs the event to ExportLog.
+    Saves the physical file directly inside Supabase Object Storage (S3) under exports/ prefix,
+    and logs the event to ExportLog with its secure expiring download URL.
     """
     export_format = request.data.get('format', 'CSV').upper()
     delivery = request.data.get('delivery', 'download').lower()
@@ -642,42 +767,14 @@ def records_export(request):
         
     df = pd.DataFrame(data_list)
     
-    # Logging the export
-    user_identity = request.headers.get('X-User', 'lead_analyst@tata.com')
-    if request.user.is_authenticated:
-        user_identity = request.user.email or request.user.username
-        
-    user_obj = request.user if request.user.is_authenticated else None
-    
-    ExportLog.objects.create(
-        user=user_identity,
-        performed_by=user_obj,
-        export_type=f"{export_format} {delivery.capitalize()}",
-        row_count=row_count,
-        source_filters={"format": export_format, "delivery": delivery, "email": recipient_email}
-    )
-    
+    # Generate file contents and settings
     if export_format == 'CSV':
         csv_buffer = io.StringIO()
         df.to_csv(csv_buffer, index=False)
-        csv_data = csv_buffer.getvalue().encode('utf-8')
-        
-        if delivery == 'download':
-            response = HttpResponse(csv_data, content_type='text/csv')
-            response['Content-Disposition'] = 'attachment; filename="esg_emissions_ledger.csv"'
-            return response
-        else:
-            email = EmailMessage(
-                subject='Approved ESG Carbon Ledger Export',
-                body=f'Hello,\n\nPlease find attached the approved ESG carbon ledger CSV export containing {row_count} records.\n\nBest Regards,\nESG Analytics Platform',
-                from_email='no-reply@esgplatform.com',
-                to=[recipient_email]
-            )
-            email.attach('esg_emissions_ledger.csv', csv_data, 'text/csv')
-            email.send()
-            return Response({"message": f"Approved ledger CSV exported and emailed to {recipient_email} successfully.", "row_count": row_count}, status=status.HTTP_200_OK)
-            
-    elif export_format == 'XLSX':
+        file_data = csv_buffer.getvalue().encode('utf-8')
+        content_type = 'text/csv'
+        file_ext = 'csv'
+    else:  # XLSX
         xlsx_buffer = io.BytesIO()
         with pd.ExcelWriter(xlsx_buffer, engine='openpyxl') as writer:
             # 1. Summary sheet
@@ -697,10 +794,59 @@ def records_export(request):
             # 2. Detailed sheet
             df.to_excel(writer, sheet_name="Emission Records", index=False)
             
-        xlsx_data = xlsx_buffer.getvalue()
+        file_data = xlsx_buffer.getvalue()
+        content_type = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        file_ext = 'xlsx'
+
+    # Save to Supabase Storage S3
+    from django.core.files.storage import default_storage
+    from django.core.files.base import ContentFile
+    import uuid
+
+    file_url = ""
+    try:
+        file_name = f"exports/export_{uuid.uuid4().hex}.{file_ext}"
+        stored_path = default_storage.save(file_name, ContentFile(file_data))
+        file_url = default_storage.url(stored_path)
+    except Exception as se:
+        # Fallback if storage backend is not fully activated (e.g. offline testing)
+        print(f"Supabase Storage S3 upload failed, returning fallback stream: {se}")
+
+    # Logging the export
+    user_identity = request.headers.get('X-User', 'lead_analyst@tata.com')
+    if request.user.is_authenticated:
+        user_identity = request.user.email or request.user.username
         
+    user_obj = request.user if request.user.is_authenticated else None
+    
+    ExportLog.objects.create(
+        user=user_identity,
+        performed_by=user_obj,
+        export_type=f"{export_format} {delivery.capitalize()}",
+        row_count=row_count,
+        source_filters={"format": export_format, "delivery": delivery, "email": recipient_email, "file_url": file_url}
+    )
+    invalidate_esg_cache()
+    
+    if export_format == 'CSV':
         if delivery == 'download':
-            response = HttpResponse(xlsx_data, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response = HttpResponse(file_data, content_type=content_type)
+            response['Content-Disposition'] = 'attachment; filename="esg_emissions_ledger.csv"'
+            return response
+        else:
+            email = EmailMessage(
+                subject='Approved ESG Carbon Ledger Export',
+                body=f'Hello,\n\nPlease find attached the approved ESG carbon ledger CSV export containing {row_count} records.\n\nBest Regards,\nESG Analytics Platform',
+                from_email='no-reply@esgplatform.com',
+                to=[recipient_email]
+            )
+            email.attach('esg_emissions_ledger.csv', file_data, content_type)
+            email.send()
+            return Response({"message": f"Approved ledger CSV exported and emailed to {recipient_email} successfully.", "row_count": row_count}, status=status.HTTP_200_OK)
+            
+    elif export_format == 'XLSX':
+        if delivery == 'download':
+            response = HttpResponse(file_data, content_type=content_type)
             response['Content-Disposition'] = 'attachment; filename="esg_emissions_ledger.xlsx"'
             return response
         else:
@@ -710,9 +856,31 @@ def records_export(request):
                 from_email='no-reply@esgplatform.com',
                 to=[recipient_email]
             )
-            email.attach('esg_emissions_ledger.xlsx', xlsx_data, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            email.attach('esg_emissions_ledger.xlsx', file_data, content_type)
             email.send()
             return Response({"message": f"Approved ledger XLSX exported and emailed to {recipient_email} successfully.", "row_count": row_count}, status=status.HTTP_200_OK)
+
+@api_view(['GET'])
+def list_export_logs(request):
+    """
+    GET /api/records/exports/
+    Returns list of all historical exports.
+    """
+    logs = ExportLog.objects.all().order_by('-timestamp')
+    data = []
+    for log in logs:
+        data.append({
+            "id": str(log.id),
+            "user": log.user,
+            "format": log.source_filters.get('format', 'CSV'),
+            "delivery_method": log.source_filters.get('delivery', 'download'),
+            "email_recipient": log.source_filters.get('email', ''),
+            "rows_exported": log.row_count,
+            "exported_at": log.timestamp.isoformat(),
+            "success": True,
+            "file_url": log.source_filters.get('file_url', '')
+        })
+    return Response(data, status=status.HTTP_200_OK)
 
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import permission_classes
@@ -814,5 +982,6 @@ def batch_delete(request, pk):
                 
         batch.delete()
         
+    invalidate_esg_cache()
     return Response({"message": "Batch and all associated records deleted successfully."}, status=status.HTTP_200_OK)
 

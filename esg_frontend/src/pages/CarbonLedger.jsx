@@ -485,6 +485,8 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
 
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this batch and all of its associated emission records? This action is completely irreversible!")) {
@@ -500,48 +502,35 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
 
   useEffect(() => {
     if (!batch?.id) return;
-    setLoading(true);
-    ingestionAPI.batchDetail(batch.id)
-      .then(res => setRecords(res.data?.results || res.data || []))
-      .catch(() => setRecords([]))
+    if (records.length === 0) {
+      setLoading(true);
+    }
+    const params = { page, page_size: 15 };
+    if (filter === 'pending') { params.approved = false; params.excluded = false; }
+    if (filter === 'outlier') params.is_outlier = true;
+    if (filter === 'approved') params.approved = true;
+    if (filter === 'excluded') params.excluded = true;
+    if (search.trim()) params.search = search.trim();
+
+    ingestionAPI.batchDetail(batch.id, params)
+      .then(res => {
+        const data = res.data;
+        setRecords(data.results ?? data ?? []);
+        setTotal(data.count ?? (data.results ?? data ?? []).length);
+      })
+      .catch(() => {
+        setRecords([]);
+        setTotal(0);
+      })
       .finally(() => setLoading(false));
-  }, [batch, refreshKey]);
+  }, [batch, page, filter, search, refreshKey]);
 
   // Reset selected checkboxes on file/batch or refresh key/filter/search change
   useEffect(() => {
     setSelectedIds(new Set());
   }, [batch, refreshKey, filter, search]);
 
-  // Compute filtered records in frontend
-  const filteredRecords = records.filter(r => {
-    // 1. Status Filter
-    if (filter === 'pending' && (r.approved || r.excluded)) return false;
-    if (filter === 'outlier' && !r.is_outlier) return false;
-    if (filter === 'approved' && !r.approved) return false;
-    if (filter === 'excluded' && !r.excluded) return false;
-    
-    // 2. Search
-    if (search.trim()) {
-      const q = search.toLowerCase().trim();
-      const label = getNormalizedLabel(r).toLowerCase();
-      const facility = (r.facility_name || '').toLowerCase();
-      const vendor = (r.vendor || '').toLowerCase();
-      const date = (r.emission_date || '').toLowerCase();
-      const id = String(r.id).toLowerCase();
-      
-      const match = 
-        label.includes(q) || 
-        facility.includes(q) || 
-        vendor.includes(q) || 
-        date.includes(q) ||
-        id.includes(q);
-        
-      if (!match) return false;
-    }
-    
-    return true;
-  });
-
+  const filteredRecords = records;
   const eligibleFiltered = filteredRecords.filter(r => !r.approved && !r.excluded);
   const allEligibleSelected = eligibleFiltered.length > 0 && eligibleFiltered.every(r => selectedIds.has(r.id));
 
@@ -598,7 +587,7 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
               </span>
             </div>
             <p className="text-zinc-400 text-sm mt-0.5">
-              Showing {filteredRecords.length} of {records.length} records processed from this upload. Flagged rows are highlighted in amber.
+              Showing {records.length} of {total} records processed from this upload. Flagged rows are highlighted in amber.
             </p>
           </div>
         </div>
@@ -638,7 +627,7 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
             type="text"
             placeholder="Search vendor, facility, date…"
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setPage(1); }}
             className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-650 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 transition-all"
           />
         </div>
@@ -647,7 +636,7 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
         <div className="flex items-center gap-1.5 flex-wrap">
           <Filter className="w-4 h-4 text-zinc-500 shrink-0" />
           {FILTER_OPTS.map(({ val, label }) => (
-            <button key={val} onClick={() => setFilter(val)}
+            <button key={val} onClick={() => { setFilter(val); setPage(1); }}
               id={`batch-filter-${val}`}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                 filter === val
@@ -745,6 +734,35 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
             </tbody>
           </table>
         </div>
+        {/* Pagination */}
+        <div className="flex items-center justify-between px-6 py-4 border-t border-zinc-800/50">
+          <p className="text-xs text-zinc-500">
+            Page {page} of {Math.max(1, Math.ceil(total / 15))} · {total} records
+          </p>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            {Array.from({ length: Math.min(5, Math.max(1, Math.ceil(total / 15))) }, (_, i) => {
+              const totalPages = Math.max(1, Math.ceil(total / 15));
+              const p = Math.max(1, Math.min(page - 2, totalPages - 4)) + i;
+              if (p < 1 || p > totalPages) return null;
+              return (
+                <button key={p} onClick={() => setPage(p)}
+                  className={`w-7 h-7 rounded-lg text-xs font-medium transition-all ${
+                    p === page ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'text-zinc-500 hover:text-zinc-200 hover:bg-zinc-800'
+                  }`}>
+                  {p}
+                </button>
+              );
+            })}
+            <button onClick={() => setPage(p => Math.min(Math.max(1, Math.ceil(total / 15)), p + 1))} disabled={page === Math.max(1, Math.ceil(total / 15))}
+              className="p-1.5 rounded-lg text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800 disabled:opacity-30 disabled:cursor-not-allowed transition-all">
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -769,7 +787,9 @@ export default function CarbonLedger() {
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
   useEffect(() => {
-    setLoading(true);
+    if (records.length === 0) {
+      setLoading(true);
+    }
     const params = { page, page_size: PAGE_SIZE };
     if (filter === 'pending') { params.approved = false; params.excluded = false; }
     if (filter === 'outlier') params.is_outlier = true;
@@ -802,15 +822,78 @@ export default function CarbonLedger() {
 
   const bulkApprove = async () => {
     if (!selectedIds.size) return;
-    await recordsAPI.bulkApprove([...selectedIds]);
+    const idsToApprove = new Set(selectedIds);
     setSelectedIds(new Set());
-    refresh();
+    
+    // Optimistic Update
+    setRecords(prev => prev.map(r => idsToApprove.has(r.id) ? { ...r, approved: true, excluded: false, workflow_status: 'APPROVED', status: 'APPROVED' } : r));
+    
+    try {
+      await recordsAPI.bulkApprove([...idsToApprove]);
+      refresh();
+    } catch {
+      alert("Failed to bulk approve records.");
+      refresh();
+    }
   };
 
-  const approve = async (id) => { await recordsAPI.approve(id); refresh(); };
-  const exclude = async (id, reason) => { await recordsAPI.exclude(id, reason); refresh(); };
-  const delegate = async (id, data) => { await recordsAPI.delegate(id, data); refresh(); };
-  const override = async (id, data) => { await recordsAPI.override(id, data); refresh(); };
+  const approve = async (id) => {
+    // Optimistic Update
+    setRecords(prev => prev.map(r => r.id === id ? { ...r, approved: true, excluded: false, workflow_status: 'APPROVED', status: 'APPROVED' } : r));
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+    try {
+      await recordsAPI.approve(id);
+      refresh();
+    } catch {
+      alert("Failed to approve record.");
+      refresh();
+    }
+  };
+
+  const exclude = async (id, reason) => {
+    // Optimistic Update
+    setRecords(prev => prev.map(r => r.id === id ? { ...r, approved: false, excluded: true, workflow_status: 'REJECTED', status: 'REJECTED' } : r));
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
+    try {
+      await recordsAPI.exclude(id, reason);
+      refresh();
+    } catch {
+      alert("Failed to exclude record.");
+      refresh();
+    }
+  };
+
+  const delegate = async (id, data) => {
+    // Optimistic Update: append analyst note
+    setRecords(prev => prev.map(r => r.id === id ? { ...r, override_note: `Delegated to: ${data.assigned_to}`, analyst_notes: `Delegated to: ${data.assigned_to}` } : r));
+    try {
+      await recordsAPI.delegate(id, data);
+      refresh();
+    } catch {
+      alert("Failed to delegate record.");
+      refresh();
+    }
+  };
+
+  const override = async (id, data) => {
+    // Optimistic Update
+    setRecords(prev => prev.map(r => r.id === id ? { ...r, ...data, approved: false, excluded: false, workflow_status: 'PENDING_REVIEW', status: 'PENDING_REVIEW' } : r));
+    try {
+      await recordsAPI.override(id, data);
+      refresh();
+    } catch {
+      alert("Failed to override record.");
+      refresh();
+    }
+  };
 
   const FILTER_OPTS = [
     { val: 'all', label: 'All Records' },

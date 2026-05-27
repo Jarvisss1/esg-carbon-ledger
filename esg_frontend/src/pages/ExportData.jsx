@@ -47,15 +47,33 @@ function ExportLogs() {
           ) : (
             <div className="divide-y divide-zinc-800/50">
               {logs.map((log, i) => (
-                <div key={i} className="flex items-center gap-4 py-3.5">
-                  <div className={`w-2 h-2 rounded-full shrink-0 ${log.success ? 'bg-emerald-400' : 'bg-red-400'}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-zinc-200 truncate">{log.format?.toUpperCase() || 'EXPORT'} · {log.rows_exported ?? '—'} approved rows</p>
-                    <p className="text-xs text-zinc-500">{log.delivery_method || 'download'} · {log.exported_at ? new Date(log.exported_at).toLocaleString() : '—'}</p>
+                <div key={i} className="flex items-center justify-between gap-4 py-3.5">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className={`w-2 h-2 rounded-full shrink-0 ${log.success ? 'bg-emerald-400' : 'bg-red-400'}`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm text-zinc-200 truncate">{log.format?.toUpperCase() || 'EXPORT'} · {log.rows_exported ?? '—'} approved rows</p>
+                      <p className="text-xs text-zinc-500">{log.delivery_method || 'download'} · {log.exported_at ? new Date(log.exported_at).toLocaleString() : '—'}</p>
+                    </div>
                   </div>
-                  {log.email_recipient && (
-                    <span className="text-xs text-zinc-400 font-mono truncate max-w-[140px]">{log.email_recipient}</span>
-                  )}
+                  <div className="flex items-center gap-3 shrink-0">
+                    {log.email_recipient && (
+                      <span className="text-xs text-zinc-400 font-mono truncate max-w-[140px]" title={log.email_recipient}>
+                        {log.email_recipient}
+                      </span>
+                    )}
+                    {log.file_url && (
+                      <a
+                        href={log.file_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300 transition-colors font-medium border border-emerald-500/10 hover:border-emerald-500/30 px-2.5 py-1.5 rounded-lg bg-emerald-500/5 hover:bg-emerald-500/10 shrink-0"
+                        title="Download historical exported file from Supabase storage"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        Download
+                      </a>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
