@@ -105,7 +105,7 @@ def _list_activities_impl(request):
     if cached_data is not None:
         return Response(cached_data, status=status.HTTP_200_OK)
 
-    activities = EmissionRecord.objects.all().order_by('-start_date')
+    activities = EmissionRecord.objects.select_related('raw_payload').defer('raw_payload__payload_content').order_by('-start_date')
     
     tenant_id = request.query_params.get('tenant_id')
     if not tenant_id:
@@ -186,7 +186,7 @@ def activity_detail(request, pk):
     PUT: Allows editing fields. Requires X-User header or Authenticated User and mandatory override notes.
     """
     try:
-        activity = EmissionRecord.objects.get(pk=pk)
+        activity = EmissionRecord.objects.select_related('raw_payload').defer('raw_payload__payload_content').get(pk=pk)
     except (EmissionRecord.DoesNotExist, ValidationError):
         return Response({"error": "EmissionRecord not found."}, status=status.HTTP_404_NOT_FOUND)
 
@@ -443,7 +443,7 @@ def batch_records(request, pk):
     except (IngestionBatch.DoesNotExist, ValidationError):
         return Response({"error": "IngestionBatch not found."}, status=status.HTTP_404_NOT_FOUND)
         
-    records = batch.normalized_activities.all().order_by('-start_date')
+    records = batch.normalized_activities.select_related('raw_payload').defer('raw_payload__payload_content').order_by('-start_date')
     
     # Support standard filters
     status_filter = request.query_params.get('workflow_status')
@@ -609,7 +609,7 @@ def record_approve(request, pk):
     PATCH /api/records/{id}/approve/ -> set status=approved, lock EmissionRecord
     """
     try:
-        activity = EmissionRecord.objects.get(pk=pk)
+        activity = EmissionRecord.objects.select_related('raw_payload').defer('raw_payload__payload_content').get(pk=pk)
     except (EmissionRecord.DoesNotExist, ValidationError):
         return Response({"error": "EmissionRecord not found."}, status=status.HTTP_404_NOT_FOUND)
         
@@ -649,7 +649,7 @@ def record_reject(request, pk):
     PATCH /api/records/{id}/reject/ -> set status=rejected + flag_reason
     """
     try:
-        activity = EmissionRecord.objects.get(pk=pk)
+        activity = EmissionRecord.objects.select_related('raw_payload').defer('raw_payload__payload_content').get(pk=pk)
     except (EmissionRecord.DoesNotExist, ValidationError):
         return Response({"error": "EmissionRecord not found."}, status=status.HTTP_404_NOT_FOUND)
         
