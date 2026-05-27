@@ -78,17 +78,16 @@ def ingest_raw_payload(request):
                 ingested_by=user_identity
             )
             
-            # Run parser immediately
-            parse_stats = parse_payload(raw_payload.id)
-            invalidate_esg_cache()
+            # Enqueue dynamic parser background task
+            from .ingest_queue import enqueue_ingestion
+            enqueue_ingestion(raw_payload.id)
             
         return Response({
-            "message": "Raw payload ingested and processed successfully.",
+            "message": "Raw payload ingested successfully. Ingestion processing has been scheduled in the background.",
             "raw_payload_id": raw_payload.id,
             "integrity_hash": payload_hash,
-            "records_created": parse_stats["records_created"],
-            "parser_errors": parse_stats["errors_found"]
-        }, status=status.HTTP_201_CREATED)
+            "status": "PROCESSING"
+        }, status=status.HTTP_202_ACCEPTED)
 
     except ValidationError as ve:
         return Response({"error": str(ve)}, status=status.HTTP_400_BAD_REQUEST)
@@ -570,7 +569,7 @@ def batch_upload(request):
                 ingested_by=user_identity
             )
             
-            # Setup batch
+            # Setup batch in PROCESSING status initially
             batch = IngestionBatch.objects.create(
                 tenant=tenant,
                 source_type=source_type,
@@ -578,19 +577,19 @@ def batch_upload(request):
                 file_name=uploaded_file.name,
                 raw_file=uploaded_file,
                 raw_payload=raw_payload,
-                status="SUCCESS"
+                status="PROCESSING"
             )
             
-            parse_stats = parse_payload(raw_payload.id)
-            invalidate_esg_cache()
+            # Enqueue to background ingestion queue
+            from .ingest_queue import enqueue_ingestion
+            enqueue_ingestion(raw_payload.id, batch.id)
             
         return Response({
-            "message": "File batch uploaded and processed successfully.",
+            "message": "File batch uploaded successfully. Processing has been scheduled in the background.",
             "batch_id": batch.id,
             "raw_payload_id": raw_payload.id,
-            "records_created": parse_stats["records_created"],
-            "parser_errors": parse_stats["errors_found"]
-        }, status=status.HTTP_201_CREATED)
+            "status": "PROCESSING"
+        }, status=status.HTTP_202_ACCEPTED)
         
     except Exception as e:
         return Response({"error": f"Batch Ingestion failed: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -687,6 +686,7 @@ def record_reject(request, pk):
 def dashboard_summary(request):
     """
     Returns aggregated emissions (kgCO2e) grouped by Scope (1/2/3) and Category.
+    Also returns unified database-level record statistics for optimal dashboard load speeds.
     """
     cache_key = "esg_dashboard_summary"
     cached_data = cache.get(cache_key)
@@ -696,11 +696,19 @@ def dashboard_summary(request):
     scope_aggregation = {}
     categories_aggregation = {}
     
-    records = EmissionRecord.objects.filter(
+    records = EmissionRecord.objects.all()
+    
+    # Calculate database-level statistics using lightning-fast .count()
+    total = records.count()
+    approved = records.filter(workflow_status__in=['APPROVED', 'LOCKED_FOR_AUDIT']).count()
+    flagged = records.filter(is_suspicious=True).count()
+    pending = records.exclude(workflow_status__in=['APPROVED', 'LOCKED_FOR_AUDIT', 'REJECTED']).count()
+
+    approved_records = records.filter(
         workflow_status__in=[EmissionRecord.WorkflowStatus.APPROVED, EmissionRecord.WorkflowStatus.LOCKED_FOR_AUDIT]
     )
     
-    for r in records:
+    for r in approved_records:
         sc = r.scope or "unknown"
         val = float(r.normalized_value or r.normalized_quantity or 0)
         
@@ -710,6 +718,10 @@ def dashboard_summary(request):
         categories_aggregation[cat] = categories_aggregation.get(cat, 0.0) + val
         
     res_data = {
+        "total": total,
+        "approved": approved,
+        "flagged": flagged,
+        "pending": pending,
         "total_emissions_kgco2e": sum(scope_aggregation.values()),
         "by_scope": scope_aggregation,
         "by_category": categories_aggregation

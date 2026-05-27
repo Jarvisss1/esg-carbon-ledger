@@ -74,17 +74,22 @@ export default function Dashboard() {
 
   const loadData = async () => {
     try {
-      const [recs] = await Promise.all([
-        recordsAPI.list({ limit: 100 }),
+      const [statsRes, assignmentsRes] = await Promise.all([
+        dashboardAPI.stats(),
+        recordsAPI.list({ approved: 'false', excluded: 'false', page_size: 5 })
       ]);
-      const records = recs.data?.results || recs.data || [];
-      const approved = records.filter(r => r.approved).length;
-      const flagged = records.filter(r => r.is_outlier).length;
-      const pending = records.filter(r => !r.approved && !r.excluded).length;
-      const totalKg = records.reduce((s, r) => s + parseFloat(r.co2e_kg || 0), 0);
-      setStats({ total: records.length, approved, flagged, pending, totalTCO2e: (totalKg / 1000).toFixed(1) });
-      // My assignments (delegated to current user)
-      setAssignments(records.filter(r => !r.approved && !r.excluded).slice(0, 5));
+      
+      const s = statsRes.data;
+      setStats({
+        total: s.total ?? 0,
+        approved: s.approved ?? 0,
+        flagged: s.flagged ?? 0,
+        pending: s.pending ?? 0,
+        totalTCO2e: (parseFloat(s.total_emissions_kgco2e ?? 0) / 1000).toFixed(1)
+      });
+      
+      const myAssignments = assignmentsRes.data?.results || assignmentsRes.data || [];
+      setAssignments(myAssignments);
     } catch {
       // use mock data on error
       setStats({ total: 312, approved: 218, flagged: 24, pending: 70, totalTCO2e: '5,847' });

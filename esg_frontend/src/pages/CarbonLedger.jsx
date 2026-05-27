@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import {
   CheckCircle2, XCircle, AlertTriangle, ChevronLeft, ChevronRight,
   Filter, Search, Lock, RefreshCw, UserCheck, SlidersHorizontal,
-  Eye, FileText, Pencil, Send, X, ShieldCheck, Info, Database, Trash2
+  Eye, FileText, Pencil, Send, X, ShieldCheck, Info, Database, Trash2, Clock
 } from 'lucide-react';
 
 // ─── Normalized Category Mapping ────────────────────────────────────────────────
@@ -54,6 +54,8 @@ function RecordModal({ record, onClose, onApprove, onExclude, onDelegate, onOver
   const [delegateTo, setDelegateTo] = useState('');
   const [mode, setMode] = useState(null); // 'exclude' | 'delegate' | 'override'
   const [busy, setBusy] = useState(false);
+  const [auditLogs, setAuditLogs] = useState([]);
+  const [loadingLogs, setLoadingLogs] = useState(false);
 
   // Edit fields state
   const [isEditing, setIsEditing] = useState(false);
@@ -72,6 +74,16 @@ function RecordModal({ record, onClose, onApprove, onExclude, onDelegate, onOver
       document.body.style.overflow = 'unset';
     };
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'audit' && record?.id) {
+      setLoadingLogs(true);
+      recordsAPI.auditLogs(record.id)
+        .then(res => setAuditLogs(res.data || []))
+        .catch(() => setAuditLogs([]))
+        .finally(() => setLoadingLogs(false));
+    }
+  }, [activeTab, record?.id]);
 
   // Initialize editable fields on record switch
   useEffect(() => {
@@ -154,6 +166,7 @@ function RecordModal({ record, onClose, onApprove, onExclude, onDelegate, onOver
           {[
             { id: 'normalized', label: 'Normalized Data', icon: Eye },
             { id: 'raw', label: 'Raw Evidence', icon: FileText },
+            { id: 'audit', label: 'Audit Trail', icon: Clock },
           ].map(({ id, label, icon: Icon }) => (
             <button key={id} onClick={() => setActiveTab(id)}
               className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-all ${
@@ -276,7 +289,7 @@ function RecordModal({ record, onClose, onApprove, onExclude, onDelegate, onOver
                 </div>
               )}
             </>
-          ) : (
+          ) : activeTab === 'raw' ? (
             <>
               <div className="flex items-center gap-2 mb-2">
                 <Info className="w-4 h-4 text-zinc-500" />
@@ -286,6 +299,113 @@ function RecordModal({ record, onClose, onApprove, onExclude, onDelegate, onOver
                 {rawContent}
               </pre>
             </>
+          ) : (
+            <div className="space-y-4 animate-fade-in">
+              {loadingLogs ? (
+                <div className="flex items-center gap-2 text-zinc-550 py-12 justify-center">
+                  <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
+                  <span className="text-xs text-zinc-500">Loading audit history…</span>
+                </div>
+              ) : auditLogs.length === 0 ? (
+                <div className="text-center py-10 bg-zinc-900/20 rounded-xl border border-zinc-850">
+                  <Info className="w-8 h-8 text-zinc-600 mx-auto mb-2.5" />
+                  <p className="text-zinc-400 text-sm font-medium">No modifications recorded</p>
+                  <p className="text-zinc-650 text-xs mt-1">This record remains in its original ingested state.</p>
+                </div>
+              ) : (
+                <div className="relative border-l border-zinc-850 ml-3.5 pl-5 space-y-5 py-1">
+                  {auditLogs.map((log) => {
+                    let badgeColor = 'bg-zinc-800 text-zinc-300 border-zinc-700';
+                    let dotColor = 'bg-zinc-700 ring-zinc-950';
+                    let actionText = log.action;
+                    
+                    if (log.action === 'CREATE') {
+                      badgeColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/15';
+                      dotColor = 'bg-emerald-400 ring-zinc-950';
+                      actionText = 'System Ingested';
+                    } else if (log.action === 'EDIT') {
+                      badgeColor = 'bg-amber-500/10 text-amber-400 border-amber-500/15';
+                      dotColor = 'bg-amber-400 ring-zinc-950';
+                      actionText = 'Analyst Override';
+                    } else if (log.action === 'APPROVE') {
+                      badgeColor = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/15';
+                      dotColor = 'bg-emerald-400 ring-zinc-950';
+                      actionText = 'Approved';
+                    } else if (log.action === 'REJECT') {
+                      badgeColor = 'bg-red-500/10 text-red-400 border-red-500/15';
+                      dotColor = 'bg-red-400 ring-zinc-950';
+                      actionText = 'Excluded';
+                    } else if (log.action === 'LOCK') {
+                      badgeColor = 'bg-violet-500/10 text-violet-400 border-violet-500/15';
+                      dotColor = 'bg-violet-400 ring-zinc-950';
+                      actionText = 'Audit Locked';
+                    }
+
+                    const dateStr = log.changed_at
+                      ? new Date(log.changed_at).toLocaleString('en-IN', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })
+                      : '—';
+
+                    return (
+                      <div key={log.id} className="relative group">
+                        {/* Timeline Node */}
+                        <div className={`absolute -left-[26px] top-1.5 w-2 h-2 rounded-full ring-4 ${dotColor} transition-all`} />
+
+                        {/* Audit Card */}
+                        <div className="bg-zinc-900/40 border border-zinc-850 rounded-xl p-3.5 space-y-2.5 hover:border-zinc-800 transition-all">
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${badgeColor}`}>
+                                {actionText}
+                              </span>
+                              <span className="text-xs text-zinc-300 font-medium truncate">
+                                {log.changed_by || 'System'}
+                              </span>
+                            </div>
+                            <span className="text-[10px] text-zinc-500 font-mono shrink-0">
+                              {dateStr}
+                            </span>
+                          </div>
+
+                          {/* Reason */}
+                          {log.reason && (
+                            <div className="bg-zinc-950/20 rounded-lg px-3 py-2 border border-zinc-850">
+                              <p className="text-[9px] text-zinc-500 uppercase tracking-wider mb-0.5 font-medium">Override Reason</p>
+                              <p className="text-xs text-zinc-300 italic font-medium leading-relaxed">&ldquo;{log.reason}&rdquo;</p>
+                            </div>
+                          )}
+
+                          {/* Delta Grid */}
+                          {log.previous_values && Object.keys(log.previous_values).length > 0 && (
+                            <div className="space-y-1">
+                              <p className="text-[9px] text-zinc-500 uppercase tracking-wider font-medium">Fields Adjusted</p>
+                              <div className="grid grid-cols-1 gap-1">
+                                {Object.entries(log.previous_values).map(([field, oldVal]) => {
+                                  const newVal = log.new_values?.[field] ?? '—';
+                                  const fieldLabel = field.replace(/_/g, ' ');
+                                  return (
+                                    <div key={field} className="grid grid-cols-3 gap-1 bg-zinc-950/40 border border-zinc-850/30 rounded-lg px-2.5 py-1.5 text-[11px] items-center">
+                                      <span className="text-zinc-500 font-medium capitalize truncate">{fieldLabel}</span>
+                                      <span className="text-red-400/80 font-mono truncate line-through decoration-red-500/20">{String(oldVal)}</span>
+                                      <span className="text-emerald-400 font-mono truncate font-semibold">&rarr; {String(newVal)}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
           )}
         </div>
 

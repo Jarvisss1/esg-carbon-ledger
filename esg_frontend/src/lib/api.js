@@ -89,6 +89,9 @@ export const recordsAPI = {
     res.data = mapRecord(res.data);
     return res;
   }),
+
+  // GET   /api/activities/{id}/audit-logs/
+  auditLogs: (id) => api.get(`/api/activities/${id}/audit-logs/`),
 };
 
 // ─── Ingestion ─────────────────────────────────────────────────────────────────
