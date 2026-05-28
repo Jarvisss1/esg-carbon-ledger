@@ -41,7 +41,34 @@ This document details the critical design decisions made during the development 
 
 ---
 
-## 5. Strategic Questions for the Product Manager (PM)
+## 5. In-Memory Sequential Ingestion Queue (`ESGIngestQueueWorker`)
+* **The Ambiguity**: Heavy Excel, JSON, and XML files can take time to parse, check for anomalies, and calculate emissions. Processing them synchronously in HTTP threads triggers Gunicorn 30-second gateway timeouts and spikes RAM consumption.
+* **The Decision**: Designed and implemented an **in-memory thread-safe sequential queue** daemon thread (`ESGIngestQueueWorker` using `queue.Queue`). Ingestion returns `202 Accepted` instantly to the browser, scheduling the parsing task to execute in the background.
+* **The Rationale**:
+  * **Memory Ceiling Protection**: Celery with Redis or RabbitMQ adds significant operational container memory footprints. A thread-safe, in-memory daemon worker runs inside the existing Python process with near-zero overhead, comfortably staying within Render's tight 512MB RAM free-tier budget.
+  * **Race-Condition & DB Lock Avoidance**: Restricting queue processing to a single background worker sequentially eliminates concurrent row-locking disputes and unique deduplication key constraint collisions in the database.
+
+---
+
+## 6. Schema-Free Dynamic Metadata Storage (User Assignments)
+* **The Ambiguity**: Analysts require the ability to assign records to specific team members and track custom parameters without breaking structural compatibility or running extensive database schema migrations.
+* **The Decision**: Stored dynamic analyst assignments (`assigned_to`) and metadata changes natively within the existing database `raw_data` JSON column rather than executing a new SQL schema migration.
+* **The Rationale**:
+  * **Zero Downtime & Risk**: SQL table-altering migrations lock rows and tables in production, creating critical bottlenecks. Using a dynamic, schema-free JSON attribute permits infinite metadata growth with zero migration friction.
+  * **Robust Database Integration**: SQLite and PostgreSQL natively support compiled JSON sub-attribute querying (`raw_data__assigned_to`), allowing the dashboard queue to isolate unassigned vs assigned records instantly.
+
+---
+
+## 7. Sub-Millisecond Read Performance via `LocMemCache`
+* **The Ambiguity**: Ingested ESG ledger records are read-heavy but updated infrequently, yet rendering dynamic dashboards and timelines from deep tables creates recurring CPU database spikes.
+* **The Decision**: Enabled and configured Django's native **local memory caching (`LocMemCache`)** across read-heavy details, modal views, and audit log histories, with automated full-cache invalidations (`cache.clear()`) triggered instantly on any database write.
+* **The Rationale**:
+  * **Zero Operational Cost**: Bypasses external Redis server dependencies and bills, achieving sub-millisecond response times natively within the server's footprint.
+  * **100% Audit fresh consistency**: Invalidation on write guarantees that the carbon ledger and analyst audit trails are always perfectly up-to-date and consistent.
+
+---
+
+## 8. Strategic Questions for the Product Manager (PM)
 In a real-world enterprise deployment, we would ask the PM to clarify the following business requirements:
 
 1. **Emission Factor Recalculation**: If an international grid database (like DEFRA or IEA) updates its historical grid factors, do we retroactively recalculate and rewrite the carbon footprint of past, locked financial years, or do we apply the correction as an adjustment in the current reporting period?

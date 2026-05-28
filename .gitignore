@@ -17,6 +17,7 @@ dist-ssr/
 *.local
 .env
 .eslintcache
+Data Normalization App Research (1).md
 
 # OS/System
 .DS_Store

@@ -101,20 +101,36 @@ def sanitize_decimal(val_str: str) -> Decimal:
     except Exception:
         return Decimal('0.0000')
 
-def parse_microsoft_epoch(date_str: str) -> datetime:
+def ensure_text_content(content: str) -> str:
+    if not content:
+        return ""
+    content_stripped = content.strip()
+    if content_stripped.startswith(("{", "[", "<")):
+        return content
+    
+    # Try to decode base64 in case it is base64-encoded binary payload
+    import base64
+    try:
+        decoded_bytes = base64.b64decode(content_stripped, validate=True)
+        return decoded_bytes.decode('utf-8', errors='ignore')
+    except Exception:
+        return content
+
+def parse_microsoft_epoch(date_str) -> datetime:
+    if not date_str:
+        return timezone.now()
+    
+    date_str = str(date_str).strip()
     if '/Date(' in date_str:
         match = re.search(r'/Date\((\d+)\)/', date_str)
         if match:
             epoch_ms = int(match.group(1))
             return datetime.fromtimestamp(epoch_ms / 1000.0, tz=pytz.utc)
-    
-    for fmt in ("%Y-%m-%dT%H:%M:%S", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d", "%Y-%m-%dT%H:%M:%SZ"):
-        try:
-            dt = datetime.strptime(date_str, fmt)
-            return timezone.make_aware(dt, pytz.utc)
-        except ValueError:
-            continue
-    return timezone.now()
+            
+    try:
+        return parse_date_flexible(date_str)
+    except Exception:
+        return timezone.now()
 
 def parse_date_flexible(date_str: str) -> datetime:
     dt_val, flag = defra_parse_date(date_str)
@@ -176,9 +192,24 @@ class BulkIngestionContext:
 
 def parse_payload(raw_payload_id) -> dict:
     raw = RawPayload.objects.get(id=raw_payload_id)
-    content = raw.payload_content
+    content = ensure_text_content(raw.payload_content)
     source = raw.source_system
     tenant = raw.tenant
+
+    # Format auto-detection inside parser for resilience and database self-healing:
+    content_stripped = content.strip()
+    filename_lower = (raw.filename or "").lower()
+    if content_stripped.startswith(("{", "[")):
+        if "navanTmcResponse" in content_stripped or "navan" in filename_lower:
+            source = RawPayload.SourceSystem.NAVAN_JSON
+        else:
+            source = RawPayload.SourceSystem.CONCUR_JSON
+    elif content_stripped.startswith("<"):
+        source = RawPayload.SourceSystem.SAP_IDOC
+
+    if raw.source_system != source:
+        raw.source_system = source
+        raw.save(update_fields=['source_system'])
 
     records_created = 0
     errors = []
@@ -308,7 +339,17 @@ def parse_sap_csv(raw, batch, content, tenant):
             asset = row_dict.get('fixed_asset', '')
             mat_desc = row_dict.get('material_description', 'Diesel Fuel Oil')
             
-            p_date_str = row_dict.get('posting_date') or row_dict.get('travel_date') or row_dict.get('booking_date') or row_dict.get('date') or ''
+            p_date_str = (
+                row_dict.get('posting_date') or 
+                row_dict.get('travel_date') or 
+                row_dict.get('booking_date') or 
+                row_dict.get('departure_date') or 
+                row_dict.get('date') or 
+                row_dict.get('transaction_date') or 
+                row_dict.get('checkin_date') or 
+                row_dict.get('created_date') or 
+                ''
+            )
             p_date = parse_date_flexible(p_date_str)
             
             is_suspicious = False
@@ -599,7 +640,16 @@ def parse_sap_xlsx(raw, batch, tenant):
             asset = str(row_dict.get('fixed_asset', ''))
             mat_desc = str(row_dict.get('material_description', 'Diesel Fuel Oil'))
             
-            p_date_raw = row_dict.get('posting_date') or row_dict.get('travel_date') or row_dict.get('booking_date') or row_dict.get('date')
+            p_date_raw = (
+                row_dict.get('posting_date') or 
+                row_dict.get('travel_date') or 
+                row_dict.get('booking_date') or 
+                row_dict.get('departure_date') or 
+                row_dict.get('date') or 
+                row_dict.get('transaction_date') or 
+                row_dict.get('checkin_date') or 
+                row_dict.get('created_date')
+            )
             if isinstance(p_date_raw, datetime):
                 p_date = timezone.make_aware(p_date_raw, pytz.utc)
             elif p_date_raw:
@@ -848,6 +898,13 @@ def parse_sap_idoc_xml(raw, batch, content, tenant):
     doc_num = doc_num_elem.text if doc_num_elem is not None else f"idoc-{raw.id.hex[:6]}"
     
     pstng_date_elem = root.find('.//PSTNG_DATE')
+    if pstng_date_elem is None or not pstng_date_elem.text:
+        pstng_date_elem = root.find('.//BLDAT')
+    if pstng_date_elem is None or not pstng_date_elem.text:
+        pstng_date_elem = root.find('.//BUDAT')
+    if pstng_date_elem is None or not pstng_date_elem.text:
+        pstng_date_elem = root.find('.//CREATION_DATE')
+        
     if pstng_date_elem is not None and pstng_date_elem.text:
         d_str = pstng_date_elem.text
         p_date = parse_date_flexible(d_str)
@@ -1424,7 +1481,17 @@ def parse_travel_csv(raw, batch, content, tenant):
             trip_id = row_dict.get('txn_id') or row_dict.get('trip_id') or f"travel-{raw.id.hex[:6]}-{idx}"
             exp_type = str(row_dict.get('expense_type', 'AIR')).upper().strip()
             
-            date_str = row_dict.get('posting_date') or row_dict.get('travel_date') or row_dict.get('booking_date')
+            date_str = (
+                row_dict.get('posting_date') or 
+                row_dict.get('travel_date') or 
+                row_dict.get('booking_date') or 
+                row_dict.get('departure_date') or 
+                row_dict.get('date') or 
+                row_dict.get('transaction_date') or 
+                row_dict.get('checkin_date') or 
+                row_dict.get('created_date') or 
+                ''
+            )
             t_date = parse_date_flexible(date_str)
             
             is_suspicious = False
@@ -1670,7 +1737,13 @@ def parse_concur_json(raw, batch, content, tenant):
                 dest = arr.get('AirportCode')
                 cabin = seg.get('CabinClass', 'Economy')
                 
-                dep_time_str = dep.get('DateTime')
+                dep_time_str = (
+                    dep.get('DateTime') or 
+                    booking.get('createdDate') or 
+                    booking.get('created_date') or 
+                    booking.get('PostingDate') or 
+                    booking.get('Date')
+                )
                 t_date = parse_microsoft_epoch(dep_time_str)
                 
                 is_suspicious = False
@@ -1790,7 +1863,7 @@ def parse_navan_json(raw, batch, content, tenant):
             dest = flight.get('destinationAirport')
             cabin = flight.get('cabinClassCode', 'Y')
             
-            dep_time_str = flight.get('departureDateTime')
+            dep_time_str = flight.get('departureDateTime') or booking.get('createdDate')
             t_date = parse_microsoft_epoch(dep_time_str)
             
             is_suspicious = False
@@ -1871,18 +1944,77 @@ def parse_navan_json(raw, batch, content, tenant):
                     continue
                 else:
                     prev_records = EmissionRecord.objects.filter(unique_transaction_id=trip_id)
-                    for r in prev_records:
-                        r.workflow_status = EmissionRecord.WorkflowStatus.REJECTED
-                        r.status = "REJECTED"
-                        r.save()
+                    if prev_records.exists():
+                        for r in prev_records:
+                            r.workflow_status = EmissionRecord.WorkflowStatus.REJECTED
+                            r.status = "REJECTED"
+                            r.save()
+                            
+                            AuditLog.objects.create(
+                                activity=r,
+                                action=AuditLog.AuditAction.REJECT,
+                                changed_by=raw.ingested_by,
+                                performed_by=user_performer,
+                                reason="Navan Webhook: Trip canceled prior to audit lock. Transaction rejected."
+                            )
+                    else:
+                        # Create as a new rejected record!
+                        res = normalize_flight(None, origin, dest, cabin, coords_map)
+                        if res.success:
+                            norm_qty = Decimal(str(res.canonical_qty))
+                            normalized_value = Decimal(str(res.kgco2e))
+                            emission_factor = Decimal(str(res.emission_factor))
+                            emission_factor_source = res.emission_factor_source
+                        else:
+                            norm_qty = Decimal('0.0000')
+                            normalized_value = Decimal('0.0000')
+                            emission_factor = Decimal('0.0000')
+                            emission_factor_source = ""
+                        
+                        dedup_key = f"travel_navan_{trip_id}_canceled_{idx}"
+                        activity = EmissionRecord.objects.create(
+                            tenant=tenant,
+                            raw_payload=raw,
+                            batch=batch,
+                            source_row_index=idx,
+                            unique_transaction_id=trip_id,
+                            scope_category=EmissionRecord.ScopeCategory.SCOPE_3_TRAVEL,
+                            start_date=t_date,
+                            end_date=t_date + timedelta(hours=3),
+                            raw_quantity=Decimal('0.0000'),
+                            raw_unit='passenger-km',
+                            normalized_quantity=norm_qty,
+                            normalized_unit=EmissionRecord.NormalizedUnit.PASSENGER_KM,
+                            scope="3",
+                            category="flights",
+                            activity_value=Decimal('0.0000'),
+                            activity_unit="passenger-km",
+                            normalized_value=normalized_value,
+                            normalized_value_unit="kgCO2e",
+                            emission_factor=emission_factor,
+                            emission_factor_source=emission_factor_source,
+                            period_start=t_date,
+                            period_end=t_date + timedelta(hours=3),
+                            source_row_id=hashlib_row_id(booking),
+                            raw_data=booking,
+                            status="REJECTED",
+                            workflow_status=EmissionRecord.WorkflowStatus.REJECTED,
+                            flag_reason="Navan Ingestion: Booking was CANCELED prior to ingestion.",
+                            resolved_facility_id=origin,
+                            resolved_facility_country=country_map.get(origin.upper(), 'US') if origin else 'US',
+                            is_suspicious=True,
+                            validation_errors=["Navan Ingestion: Booking was CANCELED prior to ingestion."],
+                            deduplication_key=dedup_key
+                        )
                         
                         AuditLog.objects.create(
-                            activity=r,
-                            action=AuditLog.AuditAction.REJECT,
+                            activity=activity,
+                            action=AuditLog.AuditAction.CREATE,
                             changed_by=raw.ingested_by,
                             performed_by=user_performer,
-                            reason="Navan Webhook: Trip canceled prior to audit lock. Transaction rejected."
+                            reason="Auto-ingested canceled flight record (excluded from ledger)."
                         )
+                        records.append(activity)
                     continue
 
             res = normalize_flight(None, origin, dest, cabin, coords_map)

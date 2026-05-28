@@ -93,3 +93,25 @@ To ensure enterprise-grade accountability, the platform moved beyond simple mock
 * Our custom authentication backend (`RobustDRFAuthentication`) safely handles backwards-compatible, dynamic header mapping (`X-User`) in local development (`DEBUG = True`) and automated test execution.
 * In production deployments (`DEBUG = False` and not in test execution), dynamic dynamic headers are **strictly disabled** by default.
 * To allow pipeline automation, dynamic header auth can be securely enabled in production by configuring a strong bypass secret key (`INTERNAL_BYPASS_SECRET` in settings) and passing it inside the secure `X-Internal-Bypass-Secret` request header. All unauthorized header requests are rejected with `HTTP 403 Forbidden`.
+
+---
+
+## 6. Official Reference Sources & Ingestion Standards
+
+To establish complete compliance and audit defense, the platform's parsing models and emission metrics map directly to recognized international standards and public repositories:
+
+### A. SAP & Direct Combustion Standards
+* **SAP Fields Reference**: Field schemas, material definitions, and transaction parameters align with [SAP Help Portal MM Purchase Order Reference](https://help.sap.com/docs/SAP_S4HANA_ON-PREMISE) (search keyword: `"MM purchase order fields"`).
+* **Fuel Emission Factors**: Derived from the [DEFRA 2023 Greenhouse Gas Reporting Conversion Factors](https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2023) (specifically under the "Fuels" sheet).
+* **Nomenclature Reference**: Real-world field matching is derived from SAP IDoc flat file layouts (such as `MSEG` segments and `EDI_DC40` control blocks).
+
+### B. Utility Grid Intensity Standards
+* **Green Button Alliance Spec**: Interval and smart meter schemas are structured to comply with the standard XML/CSV definitions available at [Green Button Alliance Schema Definitions](https://www.greenbuttonalliance.org).
+* **Purchased Electricity Factors**: Grid intensities and carbon proration models utilize the localized grid electricity conversion factors from [DEFRA 2023 Conversion Factors](https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2023) (under the "Purchased electricity" tab).
+* **Billing Reference**: Custom timezone offsets and billing structures match standard UK/EU and US time-series billing CSV headers (such asPG&E Green Button formats).
+
+### C. Travel Aviation & Hotel Standards
+* **Aviation Calculations**: Great-circle routing and cabin-class multipliers (First, Business, Economy) follow the [International Civil Aviation Organization (ICAO) Carbon Emissions Calculator Methodology](https://www.icao.int/environmental-protection/CarbonOffset).
+* **Air Travel Factors**: Passenger-kilometer emissions are mapped directly to [DEFRA 2023 Air Travel Conversion Factors](https://www.gov.uk/government/publications/greenhouse-gas-reporting-conversion-factors-2023) (under the "Business travel - air" sheet).
+* **Airport IATA Codes Registry**: Geographic coordinates and 3-letter IATA codes are pre-seeded using the public flight hub directory available at [OurAirports Database](https://ourairports.com/data/airports.csv).
+* **Hotel Stays Factors**: Room-night emission factors are fetched from the standard DEFRA global hotel factors (under the "Hotels" sheet).

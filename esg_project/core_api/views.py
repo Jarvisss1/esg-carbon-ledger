@@ -610,6 +610,16 @@ def batch_upload(request):
     else:
         payload_str = file_content.decode('utf-8', errors='ignore')
 
+    # Format auto-detection: override source_sys if we detect structural formats!
+    content_stripped = payload_str.strip()
+    if content_stripped.startswith(("{", "[")):
+        if "navanTmcResponse" in content_stripped or "navan" in filename_lower:
+            source_sys = RawPayload.SourceSystem.NAVAN_JSON
+        else:
+            source_sys = RawPayload.SourceSystem.CONCUR_JSON
+    elif content_stripped.startswith("<"):
+        source_sys = RawPayload.SourceSystem.SAP_IDOC
+
     hasher = hashlib.sha256()
     hasher.update(payload_str.encode('utf-8'))
     payload_hash = hasher.hexdigest()

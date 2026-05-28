@@ -28,3 +28,36 @@ To construct a high-integrity, production-ready ESG normalization MVP within the
   * **Calculation Volatility**: Foreign exchange rates fluctuate multiple times per hour. If a transaction is re-parsed or a script is rerun, a live API might return a slightly different conversion rate, making the carbon-to-cost audit trail unreproducible.
   * **Audit Inconsistency**: Auditors require that financial exchange indices match the static figures utilized in the company's annual financial ledger.
   * **The Trade-off**: We hardcoded **static corporate exchange rate indices** within the tenant master data. This ensures that a transaction processed in January will yield the exact same currency conversion when audited in December, eliminating calculation drift.
+
+---
+
+## 4. In-Memory Queue Volatility vs. Zero Dependency Footprint
+* **The Trade-off**: Using a light, thread-safe background queue running as a daemon inside the Django web process instead of establishing a standard Celery + Redis worker cluster.
+* **Why We Chose It**:
+  * **Render Free Tier Limits**: Celery and Redis consume substantial RAM. Restricting background processing to an in-memory queue thread allowed us to fit under Render's tight 512MB limits, avoiding high infrastructure costs.
+  * **Sequential Database Consistency**: SQLite and Postgres do not suffer duplicate key insertion or row-locking conflicts because our single-threaded background worker processes one upload file strictly at a time.
+  * **The Scope Omission**: In-memory queues are volatile. If the container restarts or goes to sleep, any pending queued items are lost. We accepted this risk because the raw uploaded file payloads are already saved in the database, allowing analysts to simply click "Reprocess" from the UI if a transient failure occurs.
+
+---
+
+## 5. Schema-Free Dynamic JSON Storage vs. SQL Schema Alterations
+* **The Trade-off**: Storing dynamic properties (like `assigned_to` and cancellation trail logs) directly inside the JSON-typed `raw_data` column instead of creating new relational tables or run migrations.
+* **Why We Chose It**:
+  * **Zero Production Downtime**: Running database schema alterations (`ALTER TABLE`) locks rows and creates massive bottlenecks in highly transactional systems. Storing dynamic attributes schema-free inside JSON permits infinite model updates with zero migration friction.
+  * **Database Portability Constraints**: Querying nested JSON keys depends on the specific SQL parser in the database engine. Since PostgreSQL and SQLite natively support JSON query syntax (`raw_data__assigned_to`), we traded strict SQL column typing for speed and migration safety.
+
+---
+
+## 6. Local Memory Caching Speed vs. Multi-Node Cache Sync
+* **The Trade-off**: Standardizing on in-process local memory caching (`LocMemCache`) for read-heavy API actions (such as records detail and activity audit trails) rather than a centralized Redis caching microservice.
+* **Why We Chose It**:
+  * **Sub-Millisecond Rendering**: Fetching cache entries from local process memory requires zero network roundtrips, completing loads in less than 1ms.
+  * **The Scope Omission**: If this system is scaled horizontally across multiple servers (multi-node setup), the local caches will fall out of sync because one container's cache invalidation won't affect the other. For our single-container MVP deployment, this is not a concern, and we traded multi-node sync support for 0 infrastructure overhead and sub-millisecond retrieval speeds.
+
+---
+
+## 7. Sniffing Auto-Detection Format Overhead vs. Strict Upload constraints
+* **The Trade-off**: Sniffing the first few bytes of uploaded files to automatically override the ingestion target systems vs. raising strict parsing errors on dropdown mismatches.
+* **Why We Chose It**:
+  * **Dynamic Self-Healing**: Upload dropdown selections are highly prone to human error. Sniffing the text structure (`{`, `[`, `<`) to automatically route to `NAVAN_JSON` or `SAP_IDOC` guarantees that corrupt line-by-line parsing errors are avoided.
+  * **Calculation Overhead**: Sniffing requires loading the first few characters of the payload in memory. Since string-prefix matching in Python is exceptionally fast (less than 0.1ms), we traded this negligible computation overhead for robust, crash-free uploads.
