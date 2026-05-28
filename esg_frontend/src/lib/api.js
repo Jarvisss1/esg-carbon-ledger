@@ -37,7 +37,8 @@ const mapRecord = (r) => {
     distance_km: r.distance_km || r.raw_data?.distance_km || r.raw_data?.distance || '—',
     uplift_applied: r.uplift_applied || r.raw_data?.uplift_applied || false,
     z_score: r.z_score || (r.is_suspicious ? 3.5 : 0),
-    override_note: r.override_note || r.analyst_notes || '—'
+    override_note: r.override_note || r.analyst_notes || '—',
+    assigned_to: r.raw_data?.assigned_to || r.raw_data?.Assigned_to || '—'
   };
 };
 
@@ -79,7 +80,11 @@ export const recordsAPI = {
   bulkApprove: (ids) => api.post('/api/activities/bulk-action/', { ids, action: 'bulk-approve' }),
 
   // PUT   /api/activities/{id}/   { analyst_notes, override fields }
-  delegate: (id, data) => api.put(`/api/activities/${id}/`, { analyst_notes: `Delegated to: ${data.assigned_to}`, note: `Delegated to: ${data.assigned_to}` }).then(res => {
+  delegate: (id, data) => api.put(`/api/activities/${id}/`, {
+    analyst_notes: `Delegated to: ${data.assigned_to}`,
+    note: `Delegated to: ${data.assigned_to}`,
+    assigned_to: data.assigned_to
+  }).then(res => {
     res.data = mapRecord(res.data);
     return res;
   }),

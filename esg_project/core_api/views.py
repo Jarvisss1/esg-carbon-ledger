@@ -158,6 +158,16 @@ def _list_activities_impl(request):
     if is_outlier_filter is not None:
         activities = activities.filter(is_suspicious=(is_outlier_filter.lower() == 'true'))
 
+    assigned_to_filter = request.query_params.get('assigned_to')
+    if assigned_to_filter is not None:
+        if assigned_to_filter == '':
+            from django.db.models import Q
+            activities = activities.filter(
+                Q(raw_data__assigned_to__isnull=True) | Q(raw_data__assigned_to='')
+            )
+        else:
+            activities = activities.filter(raw_data__assigned_to=assigned_to_filter)
+
     search_query = request.query_params.get('search')
     if search_query and search_query.strip():
         q = search_query.strip()
@@ -205,7 +215,12 @@ def activity_detail(request, pk):
         return Response({"error": "EmissionRecord not found."}, status=status.HTTP_404_NOT_FOUND)
 
     if request.method == 'GET':
+        cache_key = f"esg_activity_detail_{pk}"
+        cached_data = cache.get(cache_key)
+        if cached_data is not None:
+            return Response(cached_data)
         serializer = EmissionRecordSerializer(activity)
+        cache.set(cache_key, serializer.data, 300)
         return Response(serializer.data)
 
     elif request.method == 'PUT':
@@ -267,8 +282,8 @@ def activity_detail(request, pk):
                     setattr(activity, field, new_val_coerced)
                     has_changed = True
 
-        # Handle dynamic fields in raw_data (vendor, distance_km)
-        dynamic_fields = ['vendor', 'distance_km']
+        # Handle dynamic fields in raw_data (vendor, distance_km, assigned_to)
+        dynamic_fields = ['vendor', 'distance_km', 'assigned_to']
         for field in dynamic_fields:
             if field in request.data:
                 if not isinstance(activity.raw_data, dict):
@@ -405,8 +420,14 @@ def activity_audit_logs(request, pk):
     except (EmissionRecord.DoesNotExist, ValidationError):
         return Response({"error": "EmissionRecord not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    cache_key = f"esg_audit_logs_{pk}"
+    cached_data = cache.get(cache_key)
+    if cached_data is not None:
+        return Response(cached_data, status=status.HTTP_200_OK)
+
     logs = activity.audit_logs.all().order_by('-changed_at')
     serializer = AuditLogSerializer(logs, many=True)
+    cache.set(cache_key, serializer.data, 300)
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(['GET'])
@@ -414,8 +435,14 @@ def list_tenants(request):
     """
     Lists all active Tenant entities.
     """
+    cache_key = "esg_tenants"
+    cached_data = cache.get(cache_key)
+    if cached_data is not None:
+        return Response(cached_data)
+
     tenants = Tenant.objects.all()
     serializer = TenantSerializer(tenants, many=True)
+    cache.set(cache_key, serializer.data, 300)
     return Response(serializer.data)
 
 # --- BATCHES MANAGEMENT API ENDPOINTS ---
@@ -481,6 +508,16 @@ def batch_records(request, pk):
     is_outlier_filter = request.query_params.get('is_outlier')
     if is_outlier_filter is not None:
         records = records.filter(is_suspicious=(is_outlier_filter.lower() == 'true'))
+
+    assigned_to_filter = request.query_params.get('assigned_to')
+    if assigned_to_filter is not None:
+        if assigned_to_filter == '':
+            from django.db.models import Q
+            records = records.filter(
+                Q(raw_data__assigned_to__isnull=True) | Q(raw_data__assigned_to='')
+            )
+        else:
+            records = records.filter(raw_data__assigned_to=assigned_to_filter)
 
     search_query = request.query_params.get('search')
     if search_query and search_query.strip():

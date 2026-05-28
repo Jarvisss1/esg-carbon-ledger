@@ -69,14 +69,18 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [stats, setStats] = useState(null);
   const [assignments, setAssignments] = useState([]);
+  const [unassignedQueue, setUnassignedQueue] = useState([]);
+  const [activeQueueTab, setActiveQueueTab] = useState('mine'); // 'mine' | 'unassigned'
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const loadData = async () => {
     try {
-      const [statsRes, assignmentsRes] = await Promise.all([
+      const currentUser = user?.email || user?.username || '';
+      const [statsRes, myAssignmentsRes, unassignedRes] = await Promise.all([
         dashboardAPI.stats(),
-        recordsAPI.list({ approved: 'false', excluded: 'false', page_size: 5 })
+        recordsAPI.list({ approved: 'false', excluded: 'false', assigned_to: currentUser, page_size: 5 }),
+        recordsAPI.list({ approved: 'false', excluded: 'false', assigned_to: '', page_size: 5 })
       ]);
       
       const s = statsRes.data;
@@ -88,19 +92,22 @@ export default function Dashboard() {
         totalTCO2e: (parseFloat(s.total_emissions_kgco2e ?? 0) / 1000).toFixed(1)
       });
       
-      const myAssignments = assignmentsRes.data?.results || assignmentsRes.data || [];
-      setAssignments(myAssignments);
+      const myRecs = myAssignmentsRes.data?.results || myAssignmentsRes.data || [];
+      const unassignedRecs = unassignedRes.data?.results || unassignedRes.data || [];
+      setAssignments(myRecs);
+      setUnassignedQueue(unassignedRecs);
     } catch {
       // use mock data on error
       setStats({ total: 312, approved: 218, flagged: 24, pending: 70, totalTCO2e: '5,847' });
       setAssignments([]);
+      setUnassignedQueue([]);
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
   };
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [user]);
 
   const refresh = () => { setRefreshing(true); loadData(); };
 
@@ -189,40 +196,99 @@ export default function Dashboard() {
 
       {/* Assignments inbox */}
       <div className="glass rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-5">
-          <ClipboardCheck className="w-5 h-5 text-emerald-400" />
-          <h2 className="text-base font-semibold text-white">My Review Queue</h2>
-          {assignments.length > 0 && (
-            <span className="ml-auto bg-amber-500/20 text-amber-400 text-xs font-bold px-2 py-0.5 rounded-full border border-amber-500/20">
-              {assignments.length} pending
-            </span>
-          )}
+        <div className="flex flex-wrap items-center justify-between gap-4 mb-5 pb-1.5 border-b border-zinc-800/50">
+          <div className="flex items-center gap-3">
+            <ClipboardCheck className="w-5 h-5 text-emerald-400" />
+            <h2 className="text-base font-semibold text-white">Review Queue</h2>
+          </div>
+          <div className="flex items-center gap-1 bg-zinc-900/60 p-0.5 rounded-lg border border-zinc-850">
+            <button
+              onClick={() => setActiveQueueTab('mine')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                activeQueueTab === 'mine'
+                  ? 'bg-emerald-500 text-zinc-950 shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              Assigned to Me
+              {assignments.length > 0 && (
+                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${activeQueueTab === 'mine' ? 'bg-zinc-950/20 text-zinc-950' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+                  {assignments.length}
+                </span>
+              )}
+            </button>
+            <button
+              onClick={() => setActiveQueueTab('unassigned')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                activeQueueTab === 'unassigned'
+                  ? 'bg-emerald-500 text-zinc-950 shadow-sm'
+                  : 'text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              Unassigned Queue
+              {unassignedQueue.length > 0 && (
+                <span className={`px-1.5 py-0.5 text-[10px] font-bold rounded-full ${activeQueueTab === 'unassigned' ? 'bg-zinc-950/20 text-zinc-950' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'}`}>
+                  {unassignedQueue.length}
+                </span>
+              )}
+            </button>
+          </div>
         </div>
-        {assignments.length === 0 ? (
-          <div className="text-center py-10">
-            <CheckCircle2 className="w-10 h-10 text-emerald-500/30 mx-auto mb-3" />
-            <p className="text-zinc-500 text-sm">No pending assignments — you're all caught up!</p>
-            <p className="text-zinc-600 text-xs mt-1">Upload data or visit the Carbon Ledger to review records.</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-zinc-800/50">
-            {assignments.map((rec) => (
-              <div key={rec.id} className="flex items-center gap-4 py-3.5 hover:bg-zinc-800/20 rounded-xl px-2 transition-all">
-                <div className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-zinc-200 font-medium truncate">
-                    {rec.source_type || 'Emission Record'} — {rec.vendor || rec.facility_name || 'Unknown'}
-                  </p>
-                  <p className="text-xs text-zinc-500 mt-0.5">
-                    {rec.co2e_kg ? `${(rec.co2e_kg/1000).toFixed(3)} tCO₂e` : '—'} · {rec.emission_date || '—'}
-                  </p>
+
+        {activeQueueTab === 'mine' ? (
+          assignments.length === 0 ? (
+            <div className="text-center py-10">
+              <CheckCircle2 className="w-10 h-10 text-emerald-500/30 mx-auto mb-3" />
+              <p className="text-zinc-500 text-sm">No pending assignments — you&apos;re all caught up!</p>
+              <p className="text-zinc-650 text-xs mt-1">Visit the Carbon Ledger to reassign records to yourself.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-zinc-800/50">
+              {assignments.map((rec) => (
+                <div key={rec.id} className="flex items-center gap-4 py-3.5 hover:bg-zinc-850/25 rounded-xl px-2 transition-all cursor-pointer animate-fade-in" onClick={() => window.location.hash = '#/ledger'}>
+                  <div className="w-2 h-2 rounded-full bg-amber-400 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-zinc-200 font-medium truncate">
+                      {rec.source_type || 'Emission Record'} — {rec.vendor || rec.facility_name || 'Unknown'}
+                    </p>
+                    <p className="text-xs text-zinc-500 mt-0.5">
+                      {rec.co2e_kg ? `${(rec.co2e_kg/1000).toFixed(3)} tCO₂e` : '—'} · {rec.emission_date || '—'}
+                    </p>
+                  </div>
+                  {rec.is_outlier && (
+                    <span className="text-[10px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full shrink-0">OUTLIER</span>
+                  )}
                 </div>
-                {rec.is_outlier && (
-                  <span className="text-[10px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full">OUTLIER</span>
-                )}
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )
+        ) : (
+          unassignedQueue.length === 0 ? (
+            <div className="text-center py-10">
+              <CheckCircle2 className="w-10 h-10 text-emerald-500/30 mx-auto mb-3" />
+              <p className="text-zinc-500 text-sm">No unassigned pending records!</p>
+              <p className="text-zinc-650 text-xs mt-1">All ingested records are currently assigned or review-completed.</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-zinc-800/50">
+              {unassignedQueue.map((rec) => (
+                <div key={rec.id} className="flex items-center gap-4 py-3.5 hover:bg-zinc-850/25 rounded-xl px-2 transition-all cursor-pointer animate-fade-in" onClick={() => window.location.hash = '#/ledger'}>
+                  <div className="w-2 h-2 rounded-full bg-zinc-500 shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-zinc-200 font-medium truncate">
+                      {rec.source_type || 'Emission Record'} — {rec.vendor || rec.facility_name || 'Unknown'}
+                    </p>
+                    <p className="text-xs text-zinc-500 mt-0.5">
+                      {rec.co2e_kg ? `${(rec.co2e_kg/1000).toFixed(3)} tCO₂e` : '—'} · {rec.emission_date || '—'}
+                    </p>
+                  </div>
+                  {rec.is_outlier && (
+                    <span className="text-[10px] font-semibold bg-amber-500/15 text-amber-400 border border-amber-500/20 px-2 py-0.5 rounded-full shrink-0">OUTLIER</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )
         )}
       </div>
     </div>

@@ -263,6 +263,7 @@ function RecordModal({ record, onClose, onApprove, onExclude, onDelegate, onOver
                     ) : record.distance_km ? parseFloat(record.distance_km).toFixed(1) : '—' 
                   },
                   { label: 'Uplift Applied', value: record.uplift_applied ? '8% (DEFRA)' : 'No' },
+                  { label: 'Assigned To', value: record.assigned_to && record.assigned_to !== '—' ? record.assigned_to : 'Unassigned' },
                 ].map(({ label, value }) => (
                   <div key={label} className="bg-zinc-900/60 rounded-xl p-3 border border-zinc-800">
                     <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">{label}</p>
@@ -603,7 +604,16 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedIds, setSelectedIds] = useState(new Set());
+  const [searchVal, setSearchVal] = useState('');
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchVal);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchVal]);
   const [filter, setFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -757,8 +767,8 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
             id="batch-search"
             type="text"
             placeholder="Search vendor, facility, date…"
-            value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1); }}
+            value={searchVal}
+            onChange={e => setSearchVal(e.target.value)}
             className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-650 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 transition-all"
           />
         </div>
@@ -793,7 +803,7 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
                     className="accent-emerald-500 cursor-pointer"
                   />
                 </th>
-                {['ID', 'Date', 'Normalized Category', 'Facility / Vendor', 'CO₂e (kg)', 'Country', 'Status', ''].map(h => (
+                {['ID', 'Date', 'Normalized Category', 'Facility / Vendor', 'CO₂e (kg)', 'Country', 'Status', 'Assignee', ''].map(h => (
                   <th key={h} className="px-5 py-3.5 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider whitespace-nowrap">
                     {h}
                   </th>
@@ -856,6 +866,9 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
                     <td className="px-5 py-3.5" onClick={() => onOpenRecord(rec)}>
                       <RecordBadge record={rec} />
                     </td>
+                    <td className="px-5 py-3.5 text-zinc-400 whitespace-nowrap truncate max-w-[120px]" onClick={() => onOpenRecord(rec)}>
+                      {rec.assigned_to && rec.assigned_to !== '—' ? rec.assigned_to : <span className="text-zinc-650 italic">None</span>}
+                    </td>
                     <td className="px-5 py-3.5 text-right pr-6" onClick={() => onOpenRecord(rec)}>
                       <ChevronRight className="w-4 h-4 text-zinc-500 ml-auto" />
                     </td>
@@ -907,7 +920,16 @@ export default function CarbonLedger() {
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [searchVal, setSearchVal] = useState('');
   const [search, setSearch] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearch(searchVal);
+      setPage(1);
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [searchVal]);
   const [filter, setFilter] = useState('all'); // all | pending | outlier | approved | excluded
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [activeRecord, setActiveRecord] = useState(null);
@@ -1092,8 +1114,8 @@ export default function CarbonLedger() {
                 id="ledger-search"
                 type="text"
                 placeholder="Search vendor, facility, date…"
-                value={search}
-                onChange={e => { setSearch(e.target.value); setPage(1); }}
+                value={searchVal}
+                onChange={e => setSearchVal(e.target.value)}
                 className="w-full bg-zinc-900/50 border border-zinc-800 rounded-xl pl-9 pr-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 transition-all"
               />
             </div>
@@ -1140,7 +1162,7 @@ export default function CarbonLedger() {
                         className="accent-emerald-500 cursor-pointer"
                       />
                     </th>
-                    {['ID', 'Date', 'Normalized Category', 'Facility / Vendor', 'CO₂e (kg)', 'Country', 'Status', ''].map(h => (
+                    {['ID', 'Date', 'Normalized Category', 'Facility / Vendor', 'CO₂e (kg)', 'Country', 'Status', 'Assignee', ''].map(h => (
                       <th key={h} className="px-4 py-3 text-left text-[11px] font-semibold text-zinc-500 uppercase tracking-wider whitespace-nowrap">
                         {h}
                       </th>
@@ -1194,6 +1216,9 @@ export default function CarbonLedger() {
                       </td>
                       <td className="px-4 py-3" onClick={() => setActiveRecord(rec)}>
                         <RecordBadge record={rec} />
+                      </td>
+                      <td className="px-4 py-3 text-zinc-400 whitespace-nowrap truncate max-w-[120px]" onClick={() => setActiveRecord(rec)}>
+                        {rec.assigned_to && rec.assigned_to !== '—' ? rec.assigned_to : <span className="text-zinc-650 italic">None</span>}
                       </td>
                       <td className="px-4 py-3">
                         <button onClick={() => setActiveRecord(rec)}
