@@ -70,10 +70,12 @@ def auto_seed_airports():
 class ColumnNormalizer:
     @classmethod
     def resolve_header(cls, header: str) -> str:
-        canonical = _ALIAS_TO_CANONICAL.get(header.lower())
+        if not header:
+            return ""
+        canonical = _ALIAS_TO_CANONICAL.get(str(header).lower())
         if not canonical:
-            canonical = fuzzy_resolve(header)
-        return canonical or header.strip().lower().replace(".", "_").replace(" ", "_").replace("\"", "")
+            canonical = fuzzy_resolve(str(header))
+        return canonical or str(header).strip().lower().replace(".", "_").replace(" ", "_").replace("\"", "")
 
 def sanitize_decimal(val_str: str) -> Decimal:
     if not val_str:
@@ -280,6 +282,17 @@ def parse_sap_csv(raw, batch, content, tenant):
     records = []
     errors = []
     
+    # ─── OPTIMIZED DB PRE-LOOKUPS OUTSIDE LOOP ───
+    user_performer = User.objects.filter(email=raw.ingested_by).first()
+    
+    airports = Airport.objects.all()
+    coords_map = {ap.iata_code.upper(): (float(ap.latitude), float(ap.longitude)) for ap in airports}
+    for key, val in [("DEL", (28.5665, 77.1031)), ("BOM", (19.0896, 72.8656)), ("LHR", (51.4775, -0.4614)), ("SFO", (37.6213, -122.3790)), ("JFK", (40.6413, -73.7781)), ("SIN", (1.3644, 103.9915))]:
+        if key not in coords_map:
+            coords_map[key] = val
+    country_map = {ap.iata_code.upper(): ap.country for ap in airports}
+    # ──────────────────────────────────────────────
+    
     for idx, row in enumerate(reader):
         if not row or not any(row):
             continue
@@ -295,62 +308,191 @@ def parse_sap_csv(raw, batch, content, tenant):
             asset = row_dict.get('fixed_asset', '')
             mat_desc = row_dict.get('material_description', 'Diesel Fuel Oil')
             
-            p_date_str = row_dict.get('posting_date', '')
+            p_date_str = row_dict.get('posting_date') or row_dict.get('travel_date') or row_dict.get('booking_date') or row_dict.get('date') or ''
             p_date = parse_date_flexible(p_date_str)
             
             is_suspicious = False
             validation_errors = []
             
-            # Map Scopes on SAP movement types
-            if mvt == '241':
-                scope = EmissionRecord.ScopeCategory.SCOPE_1_STATIONARY
-                if unit.upper() in ('GAL', 'GALLON', 'GALLONS'):
-                    norm_qty = qty * Decimal('3.78541')
+            exp_type = str(row_dict.get('expense_type', '')).upper().strip()
+            
+            if exp_type in ('AIR', 'HOTEL', 'GROUND', 'PERDIEM'):
+                # Process as travel
+                if exp_type == 'AIR':
+                    origin = str(row_dict.get('departure_airport', 'DEL')).upper().strip()
+                    dest = str(row_dict.get('arrival_airport', 'BOM')).upper().strip()
+                    cabin = str(row_dict.get('cabin_class', 'Economy')).strip()
+                    
+                    dist_km = None
+                    if row_dict.get('distance_km'):
+                        try:
+                            dist_km = float(row_dict.get('distance_km'))
+                        except ValueError:
+                            pass
+                    
+                    res = normalize_flight(dist_km, origin, dest, cabin, coords_map)
+                    if res.success:
+                        norm_qty = Decimal(str(res.canonical_qty))
+                        norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
+                        normalized_value = Decimal(str(res.kgco2e))
+                        emission_factor = Decimal(str(res.emission_factor))
+                        emission_factor_source = res.emission_factor_source
+                        scope_str = str(res.scope)
+                        category = "flights"
+                        if res.flag:
+                            validation_errors.append(res.flag)
+                    else:
+                        norm_qty = Decimal('0.0000')
+                        norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
+                        normalized_value = Decimal('0.0000')
+                        emission_factor = Decimal('0.0000')
+                        emission_factor_source = ""
+                        scope_str = "3"
+                        category = "flights"
+                        is_suspicious = True
+                        validation_errors.append(res.flag)
+                    
+                    plant = origin
+                    country = country_map.get(origin, 'IN')
+                    scope = EmissionRecord.ScopeCategory.SCOPE_3_TRAVEL
+                    
+                elif exp_type == 'HOTEL':
+                    hotel_name = row_dict.get('hotel_name', 'Default Hotel')
+                    hotel_country = row_dict.get('hotel_country', 'IN').upper().strip() or 'IN'
+                    nights_str = row_dict.get('nights') or row_dict.get('hotel_nights')
+                    try:
+                        nights = int(nights_str) if nights_str else 1
+                    except ValueError:
+                        nights = 1
+                    
+                    qty = Decimal(str(nights))
+                    unit = 'nights'
+                    res = normalize_hotel(nights, hotel_country)
+                    if res.success:
+                        norm_qty = Decimal(str(res.canonical_qty))
+                        norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
+                        normalized_value = Decimal(str(res.kgco2e))
+                        emission_factor = Decimal(str(res.emission_factor))
+                        emission_factor_source = res.emission_factor_source
+                        scope_str = str(res.scope)
+                        category = "hotel"
+                    else:
+                        norm_qty = Decimal('0.0000')
+                        norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
+                        normalized_value = Decimal('0.0000')
+                        emission_factor = Decimal('0.0000')
+                        emission_factor_source = ""
+                        scope_str = "3"
+                        category = "hotel"
+                        is_suspicious = True
+                        validation_errors.append(res.flag)
+                    
+                    plant = hotel_name
+                    country = hotel_country
+                    scope = EmissionRecord.ScopeCategory.SCOPE_3_TRAVEL
+                    
+                elif exp_type == 'GROUND':
+                    ground_type = row_dict.get('ground_transport_type', 'Metro')
+                    dist_str = row_dict.get('ground_distance_km') or row_dict.get('distance_km')
+                    try:
+                        distance_km = float(dist_str) if dist_str else 0.0
+                    except ValueError:
+                        distance_km = 0.0
+                    
+                    qty = Decimal(str(distance_km))
+                    unit = 'km'
+                    res = normalize_ground(distance_km, ground_type)
+                    if res.success:
+                        norm_qty = Decimal(str(res.canonical_qty))
+                        norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
+                        normalized_value = Decimal(str(res.kgco2e))
+                        emission_factor = Decimal(str(res.emission_factor))
+                        emission_factor_source = res.emission_factor_source
+                        scope_str = str(res.scope)
+                        category = "ground"
+                        if res.flag:
+                            validation_errors.append(res.flag)
+                    else:
+                        norm_qty = Decimal('0.0000')
+                        norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
+                        normalized_value = Decimal('0.0000')
+                        emission_factor = Decimal('0.0000')
+                        emission_factor_source = ""
+                        scope_str = "3"
+                        category = "ground"
+                        is_suspicious = True
+                        validation_errors.append(res.flag)
+                    
+                    plant = ground_type
+                    country = 'IN'
+                    scope = EmissionRecord.ScopeCategory.SCOPE_3_TRAVEL
+                    
+                elif exp_type == 'PERDIEM':
+                    qty = Decimal('0.0000')
+                    unit = 'USD'
+                    norm_qty = Decimal('0.0000')
+                    norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
+                    normalized_value = Decimal('0.0000')
+                    emission_factor = Decimal('0.0000')
+                    emission_factor_source = "Per Diem Exclusion"
+                    scope_str = "3"
+                    category = "per_diem"
+                    is_suspicious = True
+                    validation_errors.append("Per diem allowance — not a travel emission. Isolated from accounting.")
+                    plant = "Per Diem"
+                    country = "IN"
+                    scope = EmissionRecord.ScopeCategory.SCOPE_3_TRAVEL
+            else:
+                # Standard SAP Movement type and fuel calculation logic
+                if mvt == '241':
+                    scope = EmissionRecord.ScopeCategory.SCOPE_1_STATIONARY
+                    if unit.upper() in ('GAL', 'GALLON', 'GALLONS'):
+                        norm_qty = qty * Decimal('3.78541')
+                        norm_unit = EmissionRecord.NormalizedUnit.LITERS
+                    else:
+                        norm_qty = qty
+                        norm_unit = EmissionRecord.NormalizedUnit.LITERS
+                    if not asset:
+                        is_suspicious = True
+                        validation_errors.append("Scope 1 goods issue (241) lacks a fixed asset ID.")
+                elif mvt == '101':
+                    scope = EmissionRecord.ScopeCategory.SCOPE_3_PROCUREMENT
+                    norm_qty = qty
+                    norm_unit = EmissionRecord.NormalizedUnit.METRIC_TONS if unit.upper() in ('TO', 'TON', 'TONS') else EmissionRecord.NormalizedUnit.LITERS
+                elif mvt in ('313', '315'):
+                    scope = EmissionRecord.ScopeCategory.EXCLUDED_LOGISTICS
+                    norm_qty = Decimal('0.0000')
                     norm_unit = EmissionRecord.NormalizedUnit.LITERS
                 else:
+                    scope = EmissionRecord.ScopeCategory.SCOPE_3_PROCUREMENT
                     norm_qty = qty
                     norm_unit = EmissionRecord.NormalizedUnit.LITERS
-                if not asset:
+                
+                if qty < 0:
                     is_suspicious = True
-                    validation_errors.append("Scope 1 goods issue (241) lacks a fixed asset ID.")
-            elif mvt == '101':
-                scope = EmissionRecord.ScopeCategory.SCOPE_3_PROCUREMENT
-                norm_qty = qty
-                norm_unit = EmissionRecord.NormalizedUnit.METRIC_TONS if unit.upper() in ('TO', 'TON', 'TONS') else EmissionRecord.NormalizedUnit.LITERS
-            elif mvt in ('313', '315'):
-                scope = EmissionRecord.ScopeCategory.EXCLUDED_LOGISTICS
-                norm_qty = Decimal('0.0000')
-                norm_unit = EmissionRecord.NormalizedUnit.LITERS
-            else:
-                scope = EmissionRecord.ScopeCategory.SCOPE_3_PROCUREMENT
-                norm_qty = qty
-                norm_unit = EmissionRecord.NormalizedUnit.LITERS
-            
-            if qty < 0:
-                is_suspicious = True
-                validation_errors.append("Detected SAP reversal or credit memo transaction (negative quantity).")
+                    validation_errors.append("Detected SAP reversal or credit memo transaction (negative quantity).")
 
-            # Perform DEFRA 2023 conversions
-            res = normalize_fuel(float(qty), unit, mat_desc)
-            if res.success:
-                normalized_value = Decimal(str(res.kgco2e))
-                emission_factor = Decimal(str(res.emission_factor))
-                emission_factor_source = res.emission_factor_source
-                scope_str = str(res.scope)
-                category = "fuel"
-                if res.flag:
+                # Perform DEFRA 2023 conversions
+                res = normalize_fuel(float(qty), unit, mat_desc)
+                if res.success:
+                    normalized_value = Decimal(str(res.kgco2e))
+                    emission_factor = Decimal(str(res.emission_factor))
+                    emission_factor_source = res.emission_factor_source
+                    scope_str = str(res.scope)
+                    category = "fuel"
+                    if res.flag:
+                        validation_errors.append(res.flag)
+                else:
+                    normalized_value = Decimal('0.0000')
+                    emission_factor = Decimal('0.0000')
+                    emission_factor_source = ""
+                    scope_str = "1"
+                    category = "fuel"
+                    is_suspicious = True
                     validation_errors.append(res.flag)
-            else:
-                normalized_value = Decimal('0.0000')
-                emission_factor = Decimal('0.0000')
-                emission_factor_source = ""
-                scope_str = "1"
-                category = "fuel"
-                is_suspicious = True
-                validation_errors.append(res.flag)
 
-            plant_countries = {'PL01': 'IN', 'PL02': 'IN', 'PL04': 'GB', 'PL05': 'US'}
-            country = plant_countries.get(plant.upper(), 'IN')
+                plant_countries = {'PL01': 'IN', 'PL02': 'IN', 'PL04': 'GB', 'PL05': 'US'}
+                country = plant_countries.get(plant.upper(), 'IN')
 
             dedup_key = f"sap_csv_{txn_id}_{mvt}_{idx}"
             status = "FLAGGED" if is_suspicious else "PENDING_REVIEW"
@@ -388,9 +530,6 @@ def parse_sap_csv(raw, batch, content, tenant):
                 validation_errors=validation_errors,
                 deduplication_key=dedup_key
             )
-            
-            # Map performed_by
-            user_performer = User.objects.filter(email=raw.ingested_by).first()
 
             AuditLog.objects.create(
                 activity=activity,
@@ -407,23 +546,28 @@ def parse_sap_csv(raw, batch, content, tenant):
     return len(records), errors
 
 def parse_sap_xlsx(raw, batch, tenant):
-    if batch and batch.raw_file and os.path.exists(batch.raw_file.path):
-        xlsx_path = batch.raw_file.path
-    else:
+    try:
+        if batch and batch.raw_file:
+            # Open file-like object directly from active storage engine (S3 / Local / Memory)
+            batch.raw_file.open('rb')
+            wb = load_workbook(batch.raw_file, data_only=True)
+        else:
+            raise ValueError("No raw_file linked to batch.")
+    except Exception as e:
+        # Fallback to local default file path if remote load fails
         base_dir = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
         xlsx_path = os.path.join(base_dir, "sample_data", "sap", "sap_fuel_consumption.xlsx")
-    
-    if not os.path.exists(xlsx_path):
-        return 0, ["Excel file does not exist on disk at " + xlsx_path]
-    
-    wb = load_workbook(xlsx_path, data_only=True)
+        if not os.path.exists(xlsx_path):
+            return 0, [f"Excel file does not exist locally ({xlsx_path}) and remote load failed: {str(e)}"]
+        wb = load_workbook(xlsx_path, data_only=True)
+        
     sheet = wb.active
     
     rows = list(sheet.rows)
     if not rows:
         return 0, ["Empty Excel sheet"]
         
-    headers = [cell.value for cell in rows[0]]
+    headers = [cell.value for cell in rows[0] if cell.value is not None and str(cell.value).strip() != ""]
     resolved_headers = [ColumnNormalizer.resolve_header(h) for h in headers]
     
     plant_lookup = {'PL01': 'IN', 'PL02': 'IN', 'PL04': 'GB', 'PL05': 'US'}
@@ -436,8 +580,12 @@ def parse_sap_xlsx(raw, batch, tenant):
     records = []
     errors = []
     
+    # ─── OPTIMIZED DB PRE-LOOKUPS OUTSIDE LOOP ───
+    user_performer = User.objects.filter(email=raw.ingested_by).first()
+    # ──────────────────────────────────────────────
+    
     for idx, row in enumerate(rows[1:]):
-        vals = [cell.value for cell in row]
+        vals = [cell.value for cell in row[:len(headers)]]
         if not any(vals):
             continue
         row_dict = dict(zip(resolved_headers, vals))
@@ -451,7 +599,7 @@ def parse_sap_xlsx(raw, batch, tenant):
             asset = str(row_dict.get('fixed_asset', ''))
             mat_desc = str(row_dict.get('material_description', 'Diesel Fuel Oil'))
             
-            p_date_raw = row_dict.get('posting_date')
+            p_date_raw = row_dict.get('posting_date') or row_dict.get('travel_date') or row_dict.get('booking_date') or row_dict.get('date')
             if isinstance(p_date_raw, datetime):
                 p_date = timezone.make_aware(p_date_raw, pytz.utc)
             elif p_date_raw:
@@ -533,8 +681,6 @@ def parse_sap_xlsx(raw, batch, tenant):
                 validation_errors=validation_errors,
                 deduplication_key=dedup_key
             )
-            
-            user_performer = User.objects.filter(email=raw.ingested_by).first()
 
             AuditLog.objects.create(
                 activity=activity,
@@ -556,6 +702,10 @@ def parse_sap_odata(raw, batch, content, tenant):
     
     records = []
     errors = []
+    
+    # ─── OPTIMIZED DB PRE-LOOKUPS OUTSIDE LOOP ───
+    user_performer = User.objects.filter(email=raw.ingested_by).first()
+    # ──────────────────────────────────────────────
     
     for idx, item in enumerate(results):
         try:
@@ -654,8 +804,6 @@ def parse_sap_odata(raw, batch, content, tenant):
                 validation_errors=validation_errors,
                 deduplication_key=dedup_key
             )
-            
-            user_performer = User.objects.filter(email=raw.ingested_by).first()
 
             AuditLog.objects.create(
                 activity=activity,
@@ -690,6 +838,10 @@ def parse_sap_idoc_xml(raw, batch, content, tenant):
     
     records = []
     errors = []
+    
+    # ─── OPTIMIZED DB PRE-LOOKUPS OUTSIDE LOOP ───
+    user_performer = User.objects.filter(email=raw.ingested_by).first()
+    # ──────────────────────────────────────────────
     
     items = root.findall('.//E1BP2017_GM_ITEM_CREATE')
     doc_num_elem = root.find('.//DOCNUM')
@@ -789,8 +941,6 @@ def parse_sap_idoc_xml(raw, batch, content, tenant):
                 validation_errors=validation_errors,
                 deduplication_key=dedup_key
             )
-            
-            user_performer = User.objects.filter(email=raw.ingested_by).first()
 
             AuditLog.objects.create(
                 activity=activity,
@@ -811,6 +961,10 @@ def parse_sap_idoc_flat(raw, batch, content, tenant):
     
     records = []
     errors = []
+    
+    # ─── OPTIMIZED DB PRE-LOOKUPS OUTSIDE LOOP ───
+    user_performer = User.objects.filter(email=raw.ingested_by).first()
+    # ──────────────────────────────────────────────
     
     items_list = []
     current_item = None
@@ -954,8 +1108,6 @@ def parse_sap_idoc_flat(raw, batch, content, tenant):
                 validation_errors=validation_errors,
                 deduplication_key=dedup_key
             )
-            
-            user_performer = User.objects.filter(email=raw.ingested_by).first()
 
             AuditLog.objects.create(
                 activity=activity,
@@ -984,6 +1136,10 @@ def parse_utility_in(raw, batch, content, tenant):
     resolved_headers = [ColumnNormalizer.resolve_header(h) for h in headers]
     records = []
     errors = []
+    
+    # ─── OPTIMIZED DB PRE-LOOKUPS OUTSIDE LOOP ───
+    user_performer = User.objects.filter(email=raw.ingested_by).first()
+    # ──────────────────────────────────────────────
     
     for idx, row in enumerate(reader):
         if not row or not any(row):
@@ -1097,8 +1253,6 @@ def parse_utility_in(raw, batch, content, tenant):
                     validation_errors=validation_errors,
                     deduplication_key=dedup_key
                 )
-                
-                user_performer = User.objects.filter(email=raw.ingested_by).first()
 
                 AuditLog.objects.create(
                     activity=activity,
@@ -1124,6 +1278,10 @@ def parse_utility_uk(raw, batch, content, tenant):
     resolved_headers = [ColumnNormalizer.resolve_header(h) for h in headers]
     records = []
     errors = []
+    
+    # ─── OPTIMIZED DB PRE-LOOKUPS OUTSIDE LOOP ───
+    user_performer = User.objects.filter(email=raw.ingested_by).first()
+    # ──────────────────────────────────────────────
     
     fac_tz = {'METER-UK-01': 'Europe/London', 'METER-UK-02': 'Europe/London'}
     
@@ -1216,8 +1374,6 @@ def parse_utility_uk(raw, batch, content, tenant):
                 validation_errors=validation_errors,
                 deduplication_key=dedup_key
             )
-            
-            user_performer = User.objects.filter(email=raw.ingested_by).first()
 
             AuditLog.objects.create(
                 activity=activity,
@@ -1247,59 +1403,187 @@ def parse_travel_csv(raw, batch, content, tenant):
     records = []
     errors = []
     
+    # ─── OPTIMIZED DB PRE-LOOKUPS OUTSIDE LOOP ───
+    user_performer = User.objects.filter(email=raw.ingested_by).first()
+    
+    airports = Airport.objects.all()
+    coords_map = {ap.iata_code.upper(): (float(ap.latitude), float(ap.longitude)) for ap in airports}
+    for key, val in [("DEL", (28.5665, 77.1031)), ("BOM", (19.0896, 72.8656)), ("LHR", (51.4775, -0.4614)), ("SFO", (37.6213, -122.3790)), ("JFK", (40.6413, -73.7781)), ("SIN", (1.3644, 103.9915))]:
+        if key not in coords_map:
+            coords_map[key] = val
+            
+    country_map = {ap.iata_code.upper(): ap.country for ap in airports}
+    # ──────────────────────────────────────────────
+    
     for idx, row in enumerate(reader):
         if not row or not any(row):
             continue
         row_dict = dict(zip(resolved_headers, row))
         
         try:
-            trip_id = row_dict.get('txn_id', f"travel-{raw.id.hex[:6]}-{idx}")
-            origin = str(row_dict.get('departure_airport', 'DEL')).upper().strip()
-            dest = str(row_dict.get('arrival_airport', 'BOM')).upper().strip()
-            cabin = str(row_dict.get('cabin_class', 'Economy')).strip()
+            trip_id = row_dict.get('txn_id') or row_dict.get('trip_id') or f"travel-{raw.id.hex[:6]}-{idx}"
+            exp_type = str(row_dict.get('expense_type', 'AIR')).upper().strip()
             
-            qty = sanitize_decimal(row_dict.get('quantity', '0'))
-            unit = row_dict.get('unit', 'passenger-km')
-            
-            date_str = row_dict.get('posting_date')
+            date_str = row_dict.get('posting_date') or row_dict.get('travel_date') or row_dict.get('booking_date')
             t_date = parse_date_flexible(date_str)
             
             is_suspicious = False
             validation_errors = []
             
-            # Airports dynamic coordinates map
-            coords_map = {ap.iata_code.upper(): (float(ap.latitude), float(ap.longitude)) for ap in Airport.objects.all()}
-            for key, val in [("DEL", (28.5665, 77.1031)), ("BOM", (19.0896, 72.8656)), ("LHR", (51.4775, -0.4614)), ("SFO", (37.6213, -122.3790)), ("JFK", (40.6413, -73.7781)), ("SIN", (1.3644, 103.9915))]:
-                if key not in coords_map:
-                    coords_map[key] = val
+            if exp_type == 'AIR':
+                origin = str(row_dict.get('departure_airport', 'DEL')).upper().strip()
+                dest = str(row_dict.get('arrival_airport', 'BOM')).upper().strip()
+                cabin = str(row_dict.get('cabin_class', 'Economy')).strip()
+                
+                qty = sanitize_decimal(row_dict.get('quantity', '0'))
+                if qty == 0 and row_dict.get('distance_km'):
+                    qty = sanitize_decimal(row_dict.get('distance_km'))
+                unit = row_dict.get('unit') or 'passenger-km'
 
-            res = normalize_flight(None, origin, dest, cabin, coords_map)
-            if res.success:
-                norm_qty = Decimal(str(res.canonical_qty))
-                norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
-                normalized_value = Decimal(str(res.kgco2e))
-                emission_factor = Decimal(str(res.emission_factor))
-                emission_factor_source = res.emission_factor_source
-                scope_str = str(res.scope)
-                category = "flights"
-                if res.flag:
+                dist_km = None
+                if row_dict.get('distance_km'):
+                    try:
+                        dist_km = float(row_dict.get('distance_km'))
+                    except ValueError:
+                        pass
+
+                res = normalize_flight(dist_km, origin, dest, cabin, coords_map)
+                if res.success:
+                    norm_qty = Decimal(str(res.canonical_qty))
+                    norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
+                    normalized_value = Decimal(str(res.kgco2e))
+                    emission_factor = Decimal(str(res.emission_factor))
+                    emission_factor_source = res.emission_factor_source
+                    scope_str = str(res.scope)
+                    category = "flights"
+                    if res.flag:
+                        validation_errors.append(res.flag)
+                else:
+                    norm_qty = Decimal('0.0000')
+                    norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
+                    normalized_value = Decimal('0.0000')
+                    emission_factor = Decimal('0.0000')
+                    emission_factor_source = ""
+                    scope_str = "3"
+                    category = "flights"
+                    is_suspicious = True
                     validation_errors.append(res.flag)
-            else:
+
+                if cabin.lower() in ('business', 'first', 'j', 'f') and norm_qty < Decimal('300'):
+                    is_suspicious = True
+                    validation_errors.append("Suspicious Travel: Business or First Class selected for a short flight (< 300 km).")
+                
+                end_date = t_date + timedelta(hours=2)
+                facility_id = origin
+                country = country_map.get(origin, 'IN')
+                audit_note = "Auto-ingested flight record with dynamic Haversine coordinates + 8% detour uplift."
+
+            elif exp_type == 'HOTEL':
+                hotel_name = row_dict.get('hotel_name', 'Default Hotel')
+                hotel_city = row_dict.get('hotel_city', 'Unknown City')
+                hotel_country = row_dict.get('hotel_country', 'IN').upper().strip() or 'IN'
+                
+                nights_str = row_dict.get('nights') or row_dict.get('hotel_nights')
+                try:
+                    nights = int(nights_str) if nights_str else 1
+                except ValueError:
+                    nights = 1
+                    
+                qty = Decimal(str(nights))
+                unit = 'nights'
+                
+                checkout_str = row_dict.get('checkout_date')
+                if checkout_str:
+                    end_date = parse_date_flexible(checkout_str)
+                else:
+                    end_date = t_date + timedelta(days=nights)
+                    
+                res = normalize_hotel(nights, hotel_country)
+                if res.success:
+                    norm_qty = Decimal(str(res.canonical_qty))
+                    norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
+                    normalized_value = Decimal(str(res.kgco2e))
+                    emission_factor = Decimal(str(res.emission_factor))
+                    emission_factor_source = res.emission_factor_source
+                    scope_str = str(res.scope)
+                    category = "hotel"
+                else:
+                    norm_qty = Decimal('0.0000')
+                    norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
+                    normalized_value = Decimal('0.0000')
+                    emission_factor = Decimal('0.0000')
+                    emission_factor_source = ""
+                    scope_str = "3"
+                    category = "hotel"
+                    is_suspicious = True
+                    validation_errors.append(res.flag)
+                    
+                facility_id = hotel_name
+                country = hotel_country
+                audit_note = "Auto-ingested hotel lodging stay record with country-specific DEFRA emission factors."
+
+            elif exp_type == 'GROUND':
+                ground_type = row_dict.get('ground_transport_type', 'Metro')
+                dist_str = row_dict.get('ground_distance_km') or row_dict.get('distance_km')
+                try:
+                    distance_km = float(dist_str) if dist_str else 0.0
+                except ValueError:
+                    distance_km = 0.0
+                    
+                qty = Decimal(str(distance_km))
+                unit = 'km'
+                end_date = t_date + timedelta(hours=1)
+                
+                res = normalize_ground(distance_km, ground_type)
+                if res.success:
+                    norm_qty = Decimal(str(res.canonical_qty))
+                    norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
+                    normalized_value = Decimal(str(res.kgco2e))
+                    emission_factor = Decimal(str(res.emission_factor))
+                    emission_factor_source = res.emission_factor_source
+                    scope_str = str(res.scope)
+                    category = "ground"
+                    if res.flag:
+                        validation_errors.append(res.flag)
+                else:
+                    norm_qty = Decimal('0.0000')
+                    norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
+                    normalized_value = Decimal('0.0000')
+                    emission_factor = Decimal('0.0000')
+                    emission_factor_source = ""
+                    scope_str = "3"
+                    category = "ground"
+                    is_suspicious = True
+                    validation_errors.append(res.flag)
+                    
+                facility_id = ground_type
+                country = 'IN'
+                audit_note = "Auto-ingested ground transportation record with type-specific DEFRA emission factors."
+
+            elif exp_type == 'PERDIEM':
+                qty = Decimal('0.0000')
+                unit = 'USD'
+                end_date = t_date
+                
+                is_suspicious = True
+                validation_errors.append("Per diem allowance — not a travel emission. Isolated from accounting.")
+                
                 norm_qty = Decimal('0.0000')
                 norm_unit = EmissionRecord.NormalizedUnit.PASSENGER_KM
                 normalized_value = Decimal('0.0000')
                 emission_factor = Decimal('0.0000')
-                emission_factor_source = ""
+                emission_factor_source = "Per Diem Exclusion"
                 scope_str = "3"
-                category = "flights"
-                is_suspicious = True
-                validation_errors.append(res.flag)
+                category = "per_diem"
+                
+                facility_id = "Per Diem"
+                country = "IN"
+                audit_note = "Auto-ingested per diem allowance; flagged and excluded from accounting."
+                
+            else:
+                raise ValueError(f"Unknown expense_type '{exp_type}'")
 
-            if cabin.lower() in ('business', 'first', 'j', 'f') and norm_qty < Decimal('300'):
-                is_suspicious = True
-                validation_errors.append("Suspicious Travel: Business or First Class selected for a short flight (< 300 km).")
-
-            dedup_key = f"travel_csv_{trip_id}_{idx}"
+            dedup_key = f"travel_csv_{trip_id}_{exp_type.lower()}_{idx}"
             status = "FLAGGED" if is_suspicious else "PENDING_REVIEW"
 
             activity = EmissionRecord.objects.create(
@@ -1310,7 +1594,7 @@ def parse_travel_csv(raw, batch, content, tenant):
                 unique_transaction_id=trip_id,
                 scope_category=EmissionRecord.ScopeCategory.SCOPE_3_TRAVEL,
                 start_date=t_date,
-                end_date=t_date + timedelta(hours=2),
+                end_date=end_date,
                 raw_quantity=qty,
                 raw_unit=unit,
                 normalized_quantity=norm_qty,
@@ -1324,26 +1608,24 @@ def parse_travel_csv(raw, batch, content, tenant):
                 emission_factor=emission_factor,
                 emission_factor_source=emission_factor_source,
                 period_start=t_date,
-                period_end=t_date + timedelta(hours=2),
+                period_end=end_date,
                 source_row_id=hashlib_row_id(row_dict),
                 raw_data=row_dict,
                 status=status,
                 flag_reason="; ".join(validation_errors),
-                resolved_facility_id=origin,
-                resolved_facility_country=Airport.objects.filter(iata_code=origin).first().country if Airport.objects.filter(iata_code=origin).exists() else 'IN',
+                resolved_facility_id=facility_id,
+                resolved_facility_country=country,
                 is_suspicious=is_suspicious,
                 validation_errors=validation_errors,
                 deduplication_key=dedup_key
             )
-            
-            user_performer = User.objects.filter(email=raw.ingested_by).first()
 
             AuditLog.objects.create(
                 activity=activity,
                 action=AuditLog.AuditAction.CREATE,
                 changed_by=raw.ingested_by,
                 performed_by=user_performer,
-                reason="Auto-ingested flight record with dynamic Haversine coordinates + 8% detour uplift."
+                reason=audit_note
             )
             records.append(activity)
             
@@ -1358,6 +1640,14 @@ def parse_concur_json(raw, batch, content, tenant):
     
     records = []
     errors = []
+    
+    user_performer = User.objects.filter(email=raw.ingested_by).first()
+    airports = Airport.objects.all()
+    coords_map = {ap.iata_code.upper(): (float(ap.latitude), float(ap.longitude)) for ap in airports}
+    for key, val in [("DEL", (28.5665, 77.1031)), ("BOM", (19.0896, 72.8656)), ("LHR", (51.4775, -0.4614)), ("SFO", (37.6213, -122.3790)), ("JFK", (40.6413, -73.7781)), ("SIN", (1.3644, 103.9915))]:
+        if key not in coords_map:
+            coords_map[key] = val
+    country_map = {ap.iata_code.upper(): ap.country for ap in airports}
     
     for idx, booking in enumerate(bookings):
         try:
@@ -1389,11 +1679,6 @@ def parse_concur_json(raw, batch, content, tenant):
                 if not emp_id:
                     is_suspicious = True
                     validation_errors.append("Audit Alert: Travel booked by non-employee (guest). Manual boundary check required.")
-
-                coords_map = {ap.iata_code.upper(): (float(ap.latitude), float(ap.longitude)) for ap in Airport.objects.all()}
-                for key, val in [("DEL", (28.5665, 77.1031)), ("BOM", (19.0896, 72.8656)), ("LHR", (51.4775, -0.4614)), ("SFO", (37.6213, -122.3790)), ("JFK", (40.6413, -73.7781)), ("SIN", (1.3644, 103.9915))]:
-                    if key not in coords_map:
-                        coords_map[key] = val
 
                 res = normalize_flight(None, origin, dest, cabin, coords_map)
                 if res.success:
@@ -1448,14 +1733,12 @@ def parse_concur_json(raw, batch, content, tenant):
                     status=status,
                     flag_reason="; ".join(validation_errors),
                     resolved_facility_id=origin,
-                    resolved_facility_country=Airport.objects.filter(iata_code=origin).first().country if Airport.objects.filter(iata_code=origin).exists() else 'US',
+                    resolved_facility_country=country_map.get(origin.upper(), 'US'),
                     is_suspicious=is_suspicious,
                     validation_errors=validation_errors,
                     deduplication_key=dedup_key
                 )
                 
-                user_performer = User.objects.filter(email=raw.ingested_by).first()
-
                 AuditLog.objects.create(
                     activity=activity,
                     action=AuditLog.AuditAction.CREATE,
@@ -1476,6 +1759,18 @@ def parse_navan_json(raw, batch, content, tenant):
     
     records = []
     errors = []
+    
+    # ─── OPTIMIZED DB PRE-LOOKUPS OUTSIDE LOOP ───
+    user_performer = User.objects.filter(email=raw.ingested_by).first()
+    
+    airports = Airport.objects.all()
+    coords_map = {ap.iata_code.upper(): (float(ap.latitude), float(ap.longitude)) for ap in airports}
+    for key, val in [("DEL", (28.5665, 77.1031)), ("BOM", (19.0896, 72.8656)), ("LHR", (51.4775, -0.4614)), ("SFO", (37.6213, -122.3790)), ("JFK", (40.6413, -73.7781)), ("SIN", (1.3644, 103.9915))]:
+        if key not in coords_map:
+            coords_map[key] = val
+            
+    country_map = {ap.iata_code.upper(): ap.country for ap in airports}
+    # ──────────────────────────────────────────────
     
     for idx, booking in enumerate(data):
         try:
@@ -1514,11 +1809,6 @@ def parse_navan_json(raw, batch, content, tenant):
                         locked_prev = pr
                         break
                 
-                coords_map = {ap.iata_code.upper(): (float(ap.latitude), float(ap.longitude)) for ap in Airport.objects.all()}
-                for key, val in [("DEL", (28.5665, 77.1031)), ("BOM", (19.0896, 72.8656)), ("LHR", (51.4775, -0.4614)), ("SFO", (37.6213, -122.3790)), ("JFK", (40.6413, -73.7781)), ("SIN", (1.3644, 103.9915))]:
-                    if key not in coords_map:
-                        coords_map[key] = val
-
                 res = normalize_flight(None, origin, dest, cabin, coords_map)
                 if res.success:
                     norm_qty = Decimal(str(res.canonical_qty))
@@ -1564,14 +1854,12 @@ def parse_navan_json(raw, batch, content, tenant):
                         status=status,
                         flag_reason="Navan Webhook: Cancellation received for previously LOCKED/audited transaction. Compensation offset written.",
                         resolved_facility_id=origin,
-                        resolved_facility_country=Airport.objects.filter(iata_code=origin).first().country if Airport.objects.filter(iata_code=origin).exists() else 'US',
+                        resolved_facility_country=country_map.get(origin.upper(), 'US') if origin else 'US',
                         is_suspicious=True,
                         validation_errors=["Navan Webhook: Cancellation received for previously LOCKED/audited transaction. Compensation offset written."],
                         deduplication_key=dedup_key
                     )
                     
-                    user_performer = User.objects.filter(email=raw.ingested_by).first()
-
                     AuditLog.objects.create(
                         activity=activity,
                         action=AuditLog.AuditAction.CREATE,
@@ -1588,8 +1876,6 @@ def parse_navan_json(raw, batch, content, tenant):
                         r.status = "REJECTED"
                         r.save()
                         
-                        user_performer = User.objects.filter(email=raw.ingested_by).first()
-
                         AuditLog.objects.create(
                             activity=r,
                             action=AuditLog.AuditAction.REJECT,
@@ -1598,11 +1884,6 @@ def parse_navan_json(raw, batch, content, tenant):
                             reason="Navan Webhook: Trip canceled prior to audit lock. Transaction rejected."
                         )
                     continue
-                    
-            coords_map = {ap.iata_code.upper(): (float(ap.latitude), float(ap.longitude)) for ap in Airport.objects.all()}
-            for key, val in [("DEL", (28.5665, 77.1031)), ("BOM", (19.0896, 72.8656)), ("LHR", (51.4775, -0.4614)), ("SFO", (37.6213, -122.3790)), ("JFK", (40.6413, -73.7781)), ("SIN", (1.3644, 103.9915))]:
-                if key not in coords_map:
-                    coords_map[key] = val
 
             res = normalize_flight(None, origin, dest, cabin, coords_map)
             if res.success:
@@ -1657,14 +1938,12 @@ def parse_navan_json(raw, batch, content, tenant):
                 status=status,
                 flag_reason="; ".join(validation_errors),
                 resolved_facility_id=origin,
-                resolved_facility_country=Airport.objects.filter(iata_code=origin).first().country if Airport.objects.filter(iata_code=origin).exists() else 'US',
+                resolved_facility_country=country_map.get(origin.upper(), 'US') if origin else 'US',
                 is_suspicious=is_suspicious,
                 validation_errors=validation_errors,
                 deduplication_key=dedup_key
             )
             
-            user_performer = User.objects.filter(email=raw.ingested_by).first()
-
             AuditLog.objects.create(
                 activity=activity,
                 action=AuditLog.AuditAction.CREATE,

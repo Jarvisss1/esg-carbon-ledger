@@ -608,15 +608,21 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
 
+  const [busy, setBusy] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this batch and all of its associated emission records? This action is completely irreversible!")) {
       return;
     }
+    setDeleting(true);
     try {
       await ingestionAPI.deleteBatch(batch.id);
       onBack();
     } catch {
       alert("Failed to delete file.");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -674,12 +680,15 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
 
   const bulkApprove = async () => {
     if (!selectedIds.size) return;
+    setBusy(true);
     try {
       await recordsAPI.bulkApprove([...selectedIds]);
       setSelectedIds(new Set());
       onRefresh?.();
     } catch {
       alert("Failed to approve selected records.");
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -696,7 +705,7 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
       {/* Back Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <button onClick={onBack} className="p-2 rounded-xl bg-zinc-800/50 border border-zinc-700/50 hover:bg-zinc-700/50 hover:text-white text-zinc-300 transition-all">
+          <button onClick={onBack} className="p-2 rounded-xl bg-zinc-800/50 border border-zinc-700/50 hover:bg-zinc-700/50 hover:text-white text-zinc-300 transition-all cursor-pointer">
             <ChevronLeft className="w-4 h-4" />
           </button>
           <div>
@@ -719,19 +728,21 @@ function BatchFileDetailView({ batch, onBack, onOpenRecord, refreshKey, onRefres
           {selectedIds.size > 0 && (
             <button
               onClick={bulkApprove}
+              disabled={busy}
               id="batch-bulk-approve-btn"
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-sm font-semibold transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] animate-fade-in"
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/20 disabled:text-zinc-600 disabled:cursor-not-allowed text-zinc-950 text-sm font-semibold transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] cursor-pointer animate-fade-in animate-pulse-subtle"
             >
-              <CheckCircle2 className="w-4 h-4" />
+              {busy ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
               Approve {selectedIds.size} selected
             </button>
           )}
           <button
             onClick={handleDelete}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-500/10 border border-red-500/15 hover:bg-red-500 text-red-400 hover:text-zinc-950 transition-all shadow-[0_0_15px_rgba(239,68,68,0.1)]"
+            disabled={deleting}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold bg-red-500/10 border border-red-500/15 hover:bg-red-500 disabled:bg-red-550/20 disabled:text-zinc-600 disabled:cursor-not-allowed text-red-400 hover:text-zinc-950 transition-all shadow-[0_0_15px_rgba(239,68,68,0.1)] cursor-pointer"
             title="Delete this file and all its records"
           >
-            <Trash2 className="w-4 h-4" />
+            {deleting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-4 h-4" />}
             Delete File
           </button>
         </div>
@@ -940,6 +951,7 @@ export default function CarbonLedger() {
     else setSelectedIds(new Set(records.filter(r => !r.approved && !r.excluded).map(r => r.id)));
   };
 
+  const [bulkApproving, setBulkApproving] = useState(false);
   const bulkApprove = async () => {
     if (!selectedIds.size) return;
     const idsToApprove = new Set(selectedIds);
@@ -948,12 +960,15 @@ export default function CarbonLedger() {
     // Optimistic Update
     setRecords(prev => prev.map(r => idsToApprove.has(r.id) ? { ...r, approved: true, excluded: false, workflow_status: 'APPROVED', status: 'APPROVED' } : r));
     
+    setBulkApproving(true);
     try {
       await recordsAPI.bulkApprove([...idsToApprove]);
       refresh();
     } catch {
       alert("Failed to bulk approve records.");
       refresh();
+    } finally {
+      setBulkApproving(false);
     }
   };
 
@@ -1102,9 +1117,11 @@ export default function CarbonLedger() {
             {/* Bulk approve */}
             {selectedIds.size > 0 && (
               <button onClick={bulkApprove}
+                disabled={bulkApproving}
                 id="bulk-approve-btn"
-                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 text-sm font-semibold transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)]">
-                <CheckCircle2 className="w-4 h-4" />
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:bg-emerald-500/20 disabled:text-zinc-650 disabled:cursor-not-allowed text-zinc-950 text-sm font-semibold transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)] cursor-pointer"
+              >
+                {bulkApproving ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
                 Approve {selectedIds.size} selected
               </button>
             )}
