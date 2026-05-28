@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Leaf, Mail, Lock, Eye, EyeOff, AlertCircle, ArrowRight } from 'lucide-react';
@@ -13,6 +13,18 @@ export default function Login() {
   const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showWakeup, setShowWakeup] = useState(false);
+
+  useEffect(() => {
+    if (loading) {
+      const timer = setTimeout(() => {
+        setShowWakeup(true);
+      }, 3500);
+      return () => clearTimeout(timer);
+    } else {
+      setShowWakeup(false);
+    }
+  }, [loading]);
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -128,6 +140,21 @@ export default function Login() {
               )}
             </button>
           </form>
+
+          {showWakeup && (
+            <div className="glass border border-emerald-500/20 bg-emerald-950/10 rounded-2xl p-4 mt-4 space-y-2 animate-fade-in text-left">
+              <div className="flex items-center gap-2 text-emerald-400 text-xs font-semibold">
+                <span className="flex h-1.5 w-1.5 relative">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
+                </span>
+                Connecting to Cloud Server...
+              </div>
+              <p className="text-zinc-400 text-[11px] leading-relaxed">
+                The database server is hosted on a free cloud tier. Because of inactivity, it went to sleep and takes <strong>30-50 seconds</strong> to spin up. Please hold on, this screen will load automatically once connected!
+              </p>
+            </div>
+          )}
 
           <p className="text-center text-zinc-500 text-sm mt-6">
             Don&apos;t have an account?{' '}

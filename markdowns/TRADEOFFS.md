@@ -61,3 +61,13 @@ To construct a high-integrity, production-ready ESG normalization MVP within the
 * **Why We Chose It**:
   * **Dynamic Self-Healing**: Upload dropdown selections are highly prone to human error. Sniffing the text structure (`{`, `[`, `<`) to automatically route to `NAVAN_JSON` or `SAP_IDOC` guarantees that corrupt line-by-line parsing errors are avoided.
   * **Calculation Overhead**: Sniffing requires loading the first few characters of the payload in memory. Since string-prefix matching in Python is exceptionally fast (less than 0.1ms), we traded this negligible computation overhead for robust, crash-free uploads.
+
+---
+
+## 8. Omission: Live Production SMTP Mail Relay (Gmail/SendGrid)
+* **What We Omitted**: Standard SMTP configuration mapping to a live external email provider (such as Gmail, AWS SES, or SendGrid API) for sending carbon report exports.
+* **Why We Omitted It**:
+  * **Volatile Network Dependency & External Latency**: Relying on external mail relays in a prototype introduces network latency and the risk of network request timeouts during synchronous file exports.
+  * **Credential Management Overhead**: Production-level Gmail SMTP requires configuring app-specific passwords or OAuth credentials. These settings are fragile, prone to expiring, and represent a security risk if not managed in a dedicated secrets manager.
+  * **Operational Maintenance Costs**: A live mail service requires maintaining a domain, configuring SPF/DKIM/DMARC records to prevent spam filtering, and tracking monthly delivery usage quotas.
+  * **The Trade-off**: We traded live email dispatch for **reliable local mock logging** via Django's file-based email backend. The system writes all generated emails and attachments (CSV/XLSX ledgers) straight to the `sent_emails/` folder. This provides full audit verification of content and file attachments in a development environment, while allowing developers to switch to a production-ready SMTP setup by changing a single line in `settings.py`.

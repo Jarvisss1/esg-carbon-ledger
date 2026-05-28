@@ -68,7 +68,18 @@ This document details the critical design decisions made during the development 
 
 ---
 
-## 8. Strategic Questions for the Product Manager (PM)
+## 8. Local File-Based Email Backend vs. Production SMTP Relay (Gmail/SendGrid)
+* **The Ambiguity**: The platform supports exporting approved carbon ledger records directly via email to auditors and analysts. We need to decide how emails are sent in the development, testing, and prototype environments without incurring service costs or credential vulnerabilities.
+* **The Decision**: Standardized on Django's native local file-based email backend (`django.core.mail.backends.filebased.EmailBackend`) for the prototype environment, saving all outgoing emails to `sent_emails/` as static files, while using Django's in-memory backend (`django.core.mail.backends.locmem.EmailBackend`) for automated test isolation. We explicitly deferred the integration of live production-level SMTP relays (such as Gmail SMTP or SendGrid APIs).
+* **The Rationale**:
+  * **Environment Isolation & Security**: Using a live Gmail SMTP or third-party relay in prototype and development builds requires storing sensitive passwords, OAuth tokens, or API keys in `.env` files. This exposes credentials to accidental leakage.
+  * **Credential Volatility & Timeout Protection**: Live SMTP servers require real-time TCP handshakes and network routing, which can introduce latency and timeout errors. Additionally, password expirations or 2-Factor Authentication (2FA) changes instantly break the mail pipeline. A local file-based mock requires zero network calls and is 100% immune to external connectivity failures.
+  * **Verification & Auditability**: Outgoing messages are written directly to local disk files in `sent_emails/`. Analysts and developers can inspect the exact headers, body text, and attachments (such as generated CSV/XLSX ledgers) without checking a live inbox.
+  * **Test Isolation**: In the Django test runner suite, all email operations are automatically overridden to an in-memory box (`django.core.mail.outbox`), permitting sub-millisecond assertions without file-system write bottlenecks.
+
+---
+
+## 9. Strategic Questions for the Product Manager (PM)
 In a real-world enterprise deployment, we would ask the PM to clarify the following business requirements:
 
 1. **Emission Factor Recalculation**: If an international grid database (like DEFRA or IEA) updates its historical grid factors, do we retroactively recalculate and rewrite the carbon footprint of past, locked financial years, or do we apply the correction as an adjustment in the current reporting period?

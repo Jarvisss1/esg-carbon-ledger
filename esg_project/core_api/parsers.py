@@ -206,6 +206,23 @@ def parse_payload(raw_payload_id) -> dict:
             source = RawPayload.SourceSystem.CONCUR_JSON
     elif content_stripped.startswith("<"):
         source = RawPayload.SourceSystem.SAP_IDOC
+    elif content_stripped.startswith("EDI_DC40"):
+        source = RawPayload.SourceSystem.SAP_IDOC
+    elif filename_lower.endswith(".xlsx"):
+        source = RawPayload.SourceSystem.SAP_XLSX
+    else:
+        # Sniff flat text files / CSV headers
+        lines = content_stripped.splitlines()
+        if lines:
+            first_line_lower = lines[0].lower()
+            if "mpan" in first_line_lower or "consumption_kwh" in first_line_lower or "standing_charge_gbp" in first_line_lower:
+                source = RawPayload.SourceSystem.UTILITY_UK_CSV
+            elif "tariff_band" in first_line_lower or "reading_from" in first_line_lower or "reading_to" in first_line_lower:
+                source = RawPayload.SourceSystem.UTILITY_IN_CSV
+            elif "trip_id" in first_line_lower and "expense_type" in first_line_lower:
+                source = RawPayload.SourceSystem.TRAVEL_CSV
+            elif "bukrs" in first_line_lower and "werks" in first_line_lower and "matnr" in first_line_lower:
+                source = RawPayload.SourceSystem.SAP_CSV
 
     if raw.source_system != source:
         raw.source_system = source
@@ -1202,14 +1219,13 @@ def parse_utility_in(raw, batch, content, tenant):
         if not row or not any(row):
             continue
         row_dict = dict(zip(resolved_headers, row))
-        
         try:
-            meter_id = row_dict.get('txn_id', 'IN-METER-01')
-            qty = sanitize_decimal(row_dict.get('quantity', '0'))
+            meter_id = row_dict.get('meter_id') or row_dict.get('txn_id') or 'IN-METER-01'
+            qty = sanitize_decimal(row_dict.get('quantity') or row_dict.get('consumption') or row_dict.get('qty') or '0')
             unit = row_dict.get('unit', 'kWh')
             
-            start_str = row_dict.get('posting_date')
-            end_str = row_dict.get('end_date')
+            start_str = row_dict.get('billing_start') or row_dict.get('posting_date') or row_dict.get('start_date') or row_dict.get('period_start')
+            end_str = row_dict.get('billing_end') or row_dict.get('end_date') or row_dict.get('period_end')
             
             s_date = parse_date_flexible(start_str)
             e_date = parse_date_flexible(end_str)
@@ -1348,21 +1364,25 @@ def parse_utility_uk(raw, batch, content, tenant):
         row_dict = dict(zip(resolved_headers, row))
         
         try:
-            meter_id = row_dict.get('txn_id', 'METER-UK-01')
-            qty = sanitize_decimal(row_dict.get('quantity', '0'))
+            meter_id = row_dict.get('meter_id') or row_dict.get('txn_id') or 'METER-UK-01'
+            qty = sanitize_decimal(row_dict.get('quantity') or row_dict.get('consumption_kwh') or row_dict.get('qty') or '0')
             unit = row_dict.get('unit', 'kWh')
             
-            start_str = row_dict.get('posting_date')
-            end_str = row_dict.get('end_date') or start_str
+            start_str = row_dict.get('billing_start') or row_dict.get('posting_date') or row_dict.get('start_date') or row_dict.get('period_start')
+            end_str = row_dict.get('billing_end') or row_dict.get('end_date') or row_dict.get('period_end') or start_str
             
             tz_name = fac_tz.get(meter_id, 'Europe/London')
             local_tz = pytz.timezone(tz_name)
             
-            naive_start = datetime.strptime(start_str, "%Y-%m-%d %H:%M:%S")
+            s_dt = parse_date_flexible(start_str)
+            e_dt = parse_date_flexible(end_str)
+            
+            naive_start = timezone.make_naive(s_dt, pytz.utc) if timezone.is_aware(s_dt) else s_dt
+            naive_end = timezone.make_naive(e_dt, pytz.utc) if timezone.is_aware(e_dt) else e_dt
+            
             local_start = local_tz.localize(naive_start, is_dst=True)
             utc_start = local_start.astimezone(pytz.utc)
             
-            naive_end = datetime.strptime(end_str, "%Y-%m-%d %H:%M:%S")
             local_end = local_tz.localize(naive_end, is_dst=True)
             utc_end = local_end.astimezone(pytz.utc)
             
@@ -1375,7 +1395,8 @@ def parse_utility_uk(raw, batch, content, tenant):
                 norm_qty = qty
                 norm_unit = EmissionRecord.NormalizedUnit.KWH
                 
-            if not meter_id or meter_id.lower() == 'estimated':
+            reading_type = str(row_dict.get('reading_type') or row_dict.get('is_estimated') or '').lower()
+            if reading_type == 'true' or not meter_id:
                 is_suspicious = True
                 validation_errors.append("Calculated based on estimated utility readings; potential grid margin deviations.")
 
