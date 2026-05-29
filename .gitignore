@@ -18,6 +18,7 @@ dist-ssr/
 .env
 .eslintcache
 Data Normalization App Research (1).md
+run_odata_test.py
 
 # OS/System
 .DS_Store

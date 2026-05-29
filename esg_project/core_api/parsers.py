@@ -168,6 +168,13 @@ class BulkIngestionContext:
             obj = EmissionRecord(*args, **kwargs)
             if not obj.id:
                 obj.id = uuid.uuid4()
+            
+            # Secure tenant-scoping of deduplication keys to prevent cross-tenant key collisions
+            if obj.deduplication_key and obj.tenant:
+                tenant_prefix = f"tenant_{obj.tenant.id.hex}_"
+                if not obj.deduplication_key.startswith(tenant_prefix):
+                    obj.deduplication_key = f"{tenant_prefix}{obj.deduplication_key}"
+                    
             self.records.append(obj)
             return obj
 
@@ -202,6 +209,8 @@ def parse_payload(raw_payload_id) -> dict:
     if content_stripped.startswith(("{", "[")):
         if "navanTmcResponse" in content_stripped or "navan" in filename_lower:
             source = RawPayload.SourceSystem.NAVAN_JSON
+        elif "MaterialDocument" in content_stripped or "results" in content_stripped or "odata" in filename_lower:
+            source = RawPayload.SourceSystem.SAP_ODATA
         else:
             source = RawPayload.SourceSystem.CONCUR_JSON
     elif content_stripped.startswith("<"):

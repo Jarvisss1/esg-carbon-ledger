@@ -140,6 +140,12 @@ class NormalizedActivity(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 
     def save(self, *args, **kwargs):
+        # Secure tenant-scoping of deduplication keys to prevent cross-tenant key collisions
+        if self.deduplication_key and self.tenant:
+            tenant_prefix = f"tenant_{self.tenant.id.hex}_"
+            if not self.deduplication_key.startswith(tenant_prefix):
+                self.deduplication_key = f"{tenant_prefix}{self.deduplication_key}"
+
         # Enforce Audit-Lock Immutability
         if self.pk:
             try:
