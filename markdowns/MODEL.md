@@ -1,11 +1,12 @@
-# ESG Ingestion Data Model
+# Database Architecture & Data Model
 
-This document defines the database architecture and technical data model for the ESG normalization platform. The architecture is designed to support financial-grade auditing, multi-tenancy, and strict tracking of raw sources.
+Welcome to the data engine of our ESG Carbon Ledger. This document walks you through how we designed our database schemas, our dual-layer provenance model, and the ways we enforce security and audit readiness directly in the database layer.
 
 ---
 
-## 1. Dual-Layer Provenance Architecture
-To satisfy rigorous external ESG audits, the system implements a **dual-layer database design** to separate raw, immutable evidence from the transformed, queryable data.
+## 1. Our Dual-Layer Provenance Blueprint
+
+To stand up to rigorous third-party ESG audits (such as KPMG or PwC frameworks), we can't just parse data and throw away the source. We must prove exactly where every single kilogram of CO2e came from. To achieve this, the platform implements a **dual-layer database design** that cleanly separates our raw, immutable evidence from our parsed, queryable ledger rows.
 
 ```
        +---------------------------------------------+
@@ -32,23 +33,23 @@ To satisfy rigorous external ESG audits, the system implements a **dual-layer da
 ```
 
 1. **Raw Payload Layer**:
-   * **Rule**: Absolute immutability. The original file upload or API response text is stored in its entirety.
-   * **Purpose**: Serves as the ultimate source of truth. If a normalization script has a bug, we fix the code and re-process the raw payloads. The historical records are never lost.
-   * **Security**: SHA-256 cryptographically verified to prevent silent database tampering.
+   * **The Rule**: Absolute immutability. We store the exact original file uploads and API JSON blocks exactly as we received them.
+   * **The Purpose**: This is our ultimate source of truth. If there's ever a bug in our calculation formulas or normalization scripts, we can patch the code and re-process the raw payloads. The historical records are never lost or corrupted.
+   * **The Security**: We compute a SHA-256 hash of the payload on ingestion to guarantee that the database record has not been tampered with.
 
 2. **Ingestion Batch Layer**:
-   * **Rule**: Tracks the lifecycle of every uploaded telemetry file.
-   * **Purpose**: Allows operational tracking (row/error counts, parsed success status) and enables bulk reversals or rollbacks if a batch is found to contain corrupt source data.
+   * **The Rule**: Tracks the lifecycle of every uploaded telemetry file.
+   * **The Purpose**: Gives us great operational visibility (tracking success status, total rows parsed, and error counts). It also allows us to run clean, complete rollbacks/reversals if a batch is found to contain corrupt source data.
 
 3. **Normalized Activity Layer**:
-   * **Rule**: All columns are coerced into a standard relational schema, calculating `normalized_value` in `kgCO2e` strictly based on DEFRA 2023.
-   * **Purpose**: Allows analysts to search, flag anomalies, prorate values, and export clean aggregations.
+   * **The Rule**: Every entry here is mapped to a standardized relational schema, calculating `normalized_value` in `kgCO2e` strictly based on DEFRA 2023.
+   * **The Purpose**: Provides our main ledger entries that analysts search, filter, flag, audit, and aggregate for reports.
 
 ---
 
-## 2. Relational Database Schema (Django Style)
+## 2. Core Django Database Models
 
-### Tenant Model
+### Tenant
 Ensures absolute data isolation between different corporate clients.
 ```python
 class Tenant(models.Model):
@@ -58,8 +59,8 @@ class Tenant(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 ```
 
-### Raw Payload Model
-Stores the immutable files and API blobs.
+### Raw Payload
+Stores the original, untampered files and incoming API blobs.
 ```python
 class RawPayload(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -72,8 +73,8 @@ class RawPayload(models.Model):
     ingested_by = models.CharField(max_length=150)
 ```
 
-### Ingestion Batch Model
-Tracks statistics and metadata for each ingestion execution.
+### Ingestion Batch
+Keeps track of stats and logs for each file we ingest.
 ```python
 class IngestionBatch(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
@@ -89,8 +90,8 @@ class IngestionBatch(models.Model):
     raw_payload = models.OneToOneField(RawPayload, on_delete=models.SET_NULL, null=True, blank=True)
 ```
 
-### Airport Model
-Pre-populated table housing coordinates for flight haversine calculations.
+### Airport
+A fast lookup table housing geographic coordinates for airport routing and distance calculations.
 ```python
 class Airport(models.Model):
     iata_code = models.CharField(max_length=3, primary_key=True)
@@ -100,8 +101,8 @@ class Airport(models.Model):
     country = models.CharField(max_length=2)
 ```
 
-### Emission Record Model (aliased to NormalizedActivity)
-Houses the final carbon ledger entries. Mapped dynamically to `core_api_normalizedactivity` to maintain backward-compatibility.
+### Emission Record (NormalizedActivity)
+This is where our final standardized ledger entries live, housing calculated carbon impact.
 ```python
 class EmissionRecord(models.Model):
     class WorkflowStatus(models.TextChoices):
@@ -136,13 +137,13 @@ class EmissionRecord(models.Model):
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()
 
-    # Values (backward compat)
+    # Raw values
     raw_quantity = models.DecimalField(max_digits=18, decimal_places=4)
     raw_unit = models.CharField(max_length=50)
     normalized_quantity = models.DecimalField(max_digits=18, decimal_places=4)
     normalized_unit = models.CharField(max_length=20, choices=NormalizedUnit.choices)
 
-    # ESG Upgraded Target Fields
+    # Carbon intensity output fields
     scope = models.CharField(max_length=50, null=True, blank=True)  # "1", "2", "3"
     category = models.CharField(max_length=100, null=True, blank=True)  # "fuel", "electricity", "flights"
     activity_value = models.DecimalField(max_digits=18, decimal_places=4, null=True, blank=True)
@@ -156,11 +157,11 @@ class EmissionRecord(models.Model):
     source_row_id = models.CharField(max_length=255, null=True, blank=True)
     raw_data = models.JSONField(default=dict, blank=True)
 
-    # Geospatial 
+    # Facilities mapping
     resolved_facility_id = models.CharField(max_length=100, null=True, blank=True)
     resolved_facility_country = models.CharField(max_length=2)
 
-    # Workflow Governance
+    # Governance workflow
     status = models.CharField(max_length=50, default="PENDING_REVIEW")
     flag_reason = models.TextField(null=True, blank=True)
     is_locked = models.BooleanField(default=False)
@@ -177,40 +178,28 @@ class EmissionRecord(models.Model):
     updated_at = models.DateTimeField(default=timezone.now)
 ```
 
-### Audit Log Model
-Tracks every single override and workflow transition with pre/post-delta snaps.
-```python
-class AuditLog(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    activity = models.ForeignKey(EmissionRecord, on_delete=models.CASCADE, related_name='audit_logs')
-    action = models.CharField(max_length=20)
-    changed_by = models.CharField(max_length=150)
-    performed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    changed_at = models.DateTimeField(auto_now_add=True)
-    previous_values = models.JSONField(default=dict, blank=True)
-    new_values = models.JSONField(default=dict, blank=True)
-    reason = models.TextField()  # Compulsory override notes
-```
+---
 
-### Export Log Model
-Ensures complete compliance and accountability for carbon data sharing.
-```python
-class ExportLog(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    user = models.CharField(max_length=150)
-    performed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
-    export_type = models.CharField(max_length=50)
-    row_count = models.IntegerField(default=0)
-    source_filters = models.JSONField(default=dict, blank=True)
-```
+## 3. Strict Audit-Lock Immutability
+
+To satisfy financial auditors, any carbon transaction that has been approved or locked (`is_locked = True` or `workflow_status == LOCKED_FOR_AUDIT`) becomes **absolutely read-only**. No analyst, manager, or API request can alter the record's values.
+
+We enforce this immutability rule at two robust levels:
+1. **At the Model Level (`models.py`)**: The model's `.save()` method intercepts all database writes. If the record is already locked, it immediately throws a `ValidationError`, halting the database write before any changes can be committed.
+2. **At the Serializer Level (`serializers.py`)**: DRF's `validate` checks the status of the record during `PUT` or `PATCH` updates and blocks editing, returning a clean `400 Bad Request` before database transactions even start.
 
 ---
 
-## 3. Strict Audit-Lock Constraint
+## 4. Multi-Tenant Separation & Isolation Boundaries
 
-To satisfy financial auditor guidelines, any `EmissionRecord` that is approved or locked (`is_locked = True` or `workflow_status == LOCKED_FOR_AUDIT`) becomes **strictly read-only**. 
+Data leaks are unacceptable in corporate reporting. Here is how we enforce strict multi-tenant boundaries:
 
-This immutability rule is cryptographically and logically enforced at two separate levels in our backend:
-1. **Model Layer (`models.py`)**: The `.save()` method intercepts edits on existing database objects and raises a `ValidationError` if the record is locked, blocking direct Django ORM or Admin overrides.
-2. **REST Layer (`serializers.py`)**: The `validate` method on the `EmissionRecordSerializer` raises a validation error during any `PUT` or `PATCH` request, returning an appropriate `400 Bad Request` payload back to the calling application.
+1. **Tenant-Scoped Deduplication Keys**:
+   * To prevent duplicate rows from being double-uploaded, we use a unique composite deduplication key. We prefix this key with the tenant's UUID (`tenant_{uuid.hex}_`) during model `.save()` executions.
+   * This prevents database constraint collisions: two separate organizations (e.g., KPMG and Tata Motors) can upload identical raw spreadsheets without throwing database integrity crashes.
+2. **Seamless Email Domain Resolution**:
+   * When an analyst logs in, our custom middleware/view parser reads their work email address domain. Corporate suffixes (like `karan@kpmg.com`) extract the slug `'kpmg'` and provision a dedicated, isolated sandbox.
+   * To keep testing and development simple, public or personal domains (gmail, yahoo, outlook, protonmail, etc.) automatically fallback to the standard pre-seeded `'tata-motors'` workspace.
+3. **Active Server-Side BOLA & IDOR Overrides**:
+   * We don't rely on the client frontend to filter tenant data. Our endpoints ignore any client-supplied `tenant_id` query parameters and force searches to filter strictly by the user's logged-in session tenant.
+   * All ledger read, write, and export endpoints are wrapped with Django Rest Framework `@permission_classes([IsAuthenticated])` filters to prevent raw public scraping.

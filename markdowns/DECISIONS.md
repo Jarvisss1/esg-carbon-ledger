@@ -1,88 +1,83 @@
 # Architectural Decisions & Rationale
 
-This document details the critical design decisions made during the development of the ESG normalization prototype. It explains why specific technical paths were chosen, what subsets of data were prioritized, and outlines key questions for product management.
+This document logs the critical design decisions made during the development of our ESG Normalization and Carbon Accounting platform. It details why we took specific technical paths, how we prioritized datasets, and maps out key questions for product strategy.
 
 ---
 
-## 1. Utility Data Ingestion: Why Structured CSV over PDF OCR
-* **The Ambiguity**: Facilities management teams can acquire electricity usage history as aggregate monthly PDF bills, direct CSV portal exports, or smart meter APIs.
-* **The Decision**: The platform explicitly enforces **structured CSV portal exports** (such as PG&E Green Button CSVs or smart meter time-series CSVs) and deliberately excludes PDF bill ingestion for the initial MVP.
+## 1. Utility Data Ingestion: Why Structured CSV Wins Over PDF OCR
+
+* **The Ambiguity**: Facility utility consumption records are available in diverse formats: aggregate monthly PDF bills, direct CSV portal exports, or smart meter API endpoints.
+* **The Decision**: We chose to enforce **structured CSV portal exports** (such as standard Green Button or smart meter interval formats) and deliberately deferred PDF invoice parsing for our initial versions.
 * **The Rationale**:
-  * **Brittle PDF Extraction**: Reading PDF bills requires Optical Character Recognition (OCR) or visual segment scrapers. PDF layouts are highly volatile; a minor spacing update, font change, or seasonal marketing banner from the utility will shift the coordinate boundaries, breaking the extraction script.
-  * **High Error Susceptibility**: For financial-grade ESG auditing, extraction errors are a catastrophic failure mode. A missed decimal place, an off-by-one OCR digit reading, or mixing up the standing billing fee with the active consumption will lead to a 10x or 100x error in Scope 2 carbon metrics, causing an audit failure.
-  * **Machine-Readable Standardization**: Portals using Green Button or smart meter formats provide clean, comma-separated intervals with predictable headers. This approach ensures 100% data integrity, high parser execution speeds, and strict validation of time-series consumption.
+  * **Fragility of PDF Parsers**: Reading PDF invoices requires optical character recognition (OCR) or positional parsing rules. PDF layouts from utility providers are highly volatile; a minor redesign, margin shift, or marketing banner will misalign coordinates and break extraction scripts.
+  * **Low Margin of Error**: In financial-grade ESG auditing, error rates must be near zero. An OCR typo reading a decimal point incorrectly or confusing a dollar charge with kilowatt-hours can over- or under-report Scope 2 carbon footprints by a factor of 10 or 100, resulting in audit failures.
+  * **Machine-Readable Cleanliness**: Formats like Green Button provide clean, comma-separated intervals with predictable headers, ensuring 100% data integrity and robust ingestion speeds.
 
 ---
 
-## 2. SAP Integration Pathways: OData vs. Legacy IDocs
-* **The Ambiguity**: SAP manages material movements in deep relational structures. We must determine how to ingest fuel and procurement data from complex configurations.
-* **The Decision**: Standardized on synchronous OData payloads (`API_MATERIAL_DOCUMENT_SRV`) for modern clouds, while providing fallback parsing for flat-file CSV/Excel extracts (relying on `MSEG/EKPO` layouts) for offline operational plants.
+## 2. SAP Integration Pathways: OData vs. Legacy XML IDocs
+
+* **The Ambiguity**: SAP manages logistics and material logs in deep, relational database structures. We needed a clean way to ingest fuel and procurement tables.
+* **The Decision**: We standardized on synchronous REST-based OData payloads (`API_MATERIAL_DOCUMENT_SRV`) for modern clouds, while building highly customizable fallback handlers for CSV/Excel report extracts (e.g. `MSEG/EKPO` layouts) for offline operational plants.
 * **The Rationale**:
-  * **OData Modernity**: REST-based OData endpoints natively speak JSON, which integrates cleanly with a Django backend. It supports standard HTTP error codes, synchronous response payloads, and flexible URI filtering (e.g. `$filter=PostingDate ge ...`).
-  * **Flat-file Fallback**: In the real world, individual manufacturing plants lack direct API connections to the corporate SAP core due to strict firewall rules. Providing an analyst-driven CSV/Excel upload page for SAP reports (handling traditional table dumps with `BUKRS`, `WERKS`, `KOSTL` headers) bridges this connectivity gap.
-  * **Why XML IDocs Were Deferred**: Parsing inbound XML IDocs (`MBGMCR03` basic type) requires establishing BD64 distribution models, setting up port communications, and implementing BAPI processing queues. While we generated simulated XML IDoc files for validation, we excluded direct XML listener processes from the core synchronous MVP to focus on REST APIs.
+  * **OData Simplicity**: RESTful OData endpoints speak native JSON, integrating perfectly with a Django back-end. They natively support clean HTTP error codes, synchronous responses, and standard URI queries (like `$filter=PostingDate ge ...`).
+  * **Bridging the Connectivity Gap**: Many regional factory floors or warehouses operate behind strict local firewalls with no direct network line to the core corporate SAP system. Providing a web upload page for standard SAP report spreadsheets bridges this gap seamlessly.
+  * **Why XML IDocs Were Deferred**: Processing asynchronous XML IDocs (like the basic `MBGMCR03` segment) requires configuring complex SAP communications, message routes, and BAPI queues. To keep our RESTful services lightweight and highly responsive, we deferred direct XML listeners from the core synchronous pipeline.
 
 ---
 
-## 3. Corporate Travel Ingestion: REST APIs & Webhook Lifecycle
-* **The Ambiguity**: Corporate travel bookings are highly volatile and contain extensive transactional noise (tax fees, baggage claims, per diems).
-* **The Decision**: Chose to integrate with Concur Itinerary v4 and Navan TMC JSON models via polling schedule and webhook events, tracking bookings by a unique `trip_id`.
+## 3. Corporate Travel Ingestion: REST APIs & webhook Lifecycle
+
+* **The Ambiguity**: Travel bookings are highly fluid and contain substantial transactional noise (taxes, airline fees, cancellation adjustments, per diems).
+* **The Decision**: We integrate with Concur Itinerary (v4) and Navan TMC JSON payloads via scheduled polling and event webhooks, tracking bookings with a unique `trip_id` key.
 * **The Rationale**:
-  * **Lifecycle Mutability**: Unlike electricity smart meter feeds, travel bookings change. An employee may book a flight, modify the route, or cancel it entirely. If we treat travel records as static, immutable imports, we will over-report carbon. Our database uses a dynamic upsert matching on `trip_id` and `booking_status`. If a cancellation occurs *after* the billing cycle is audit-locked, the normalizer writes a compensating negative ledger entry.
-  * **Noise Filtering**: Per diem rows, travel taxes, and service fees (which have zero carbon relevance) are explicitly ignored during parsing. We only extract the active travel segments (flights, hotel stays, ground transport).
-  * **Traveler Boundaries**: We flag guest travelers (non-employees) in the ingestion queue. Employees fall under Scope 3 Category 6 (Business Travel), whereas guest travel is flagged for manual re-routing to Scope 3 Category 1 (Purchased Services) to satisfy auditor boundaries.
+  * **Handling Cancellations Gracefully**: Unlike static utility meters, travel itineraries are frequently updated or cancelled. If we treated travel records as static, one-time imports, we would end up over-reporting travel carbon. By tracking a persistent `trip_id`, we can perform dynamic upserts. If a cancellation is processed *after* an audit period is locked, the engine writes a compensating negative ledger entry in the current open month.
+  * **Filtering out Financial Noise**: Booking fees, baggage claims, and travel taxes carry zero carbon weight. The parser isolates and discards these rows, focusing purely on active travel segments (flights, hotel stays, vehicle rentals).
+  * **Guest Traveler Classification**: Non-employee travel is automatically flagged during ingestion. This allows analysts to manually route employee trips to Scope 3 Category 6 (Business Travel) and guest travel to Scope 3 Category 1 (Purchased Services), adhering to audit standards.
 
 ---
 
 ## 4. Goods Movement Type Mapping (SAP)
-* **The Ambiguity**: SAP logs every internal physical movement of a material as a line item. Summing all movements leads to severe double-counting.
-* **The Decision**: We handle standard goods receipts (`101`) for Scope 3 Purchased Goods, and goods issues to fixed assets (`241`) for Scope 1 Combustion. We explicitly map internal storage-to-storage transfer movements (`313 / 315`) to `EXCLUDED_LOGISTICS` with a quantity of `0` in the final carbon ledger.
+
+* **The Ambiguity**: SAP logs every physical material transfer as a distinct movement item. A naive total sum of these rows will cause severe double-counting.
+* **The Decision**: We process standard goods receipts (`101`) for Scope 3 Purchased Goods, and goods issues to fixed assets (`241`) for Scope 1 Combustion. We explicitly map internal storage-to-storage transfer movements (`313 / 315`) to `EXCLUDED_LOGISTICS` with a quantity of `0` in our ledger.
 * **The Rationale**: Storage transfers represent internal shuffling between facilities. For example, moving 500 liters of diesel from a central warehouse to a regional depot does not burn the fuel. The fuel is only burned when issued to an asset (movement `241`). Ignoring `313/315` prevents double-counting while preserving a clean audit trail.
 
 ---
 
-## 5. In-Memory Sequential Ingestion Queue (`ESGIngestQueueWorker`)
-* **The Ambiguity**: Heavy Excel, JSON, and XML files can take time to parse, check for anomalies, and calculate emissions. Processing them synchronously in HTTP threads triggers Gunicorn 30-second gateway timeouts and spikes RAM consumption.
-* **The Decision**: Designed and implemented an **in-memory thread-safe sequential queue** daemon thread (`ESGIngestQueueWorker` using `queue.Queue`). Ingestion returns `202 Accepted` instantly to the browser, scheduling the parsing task to execute in the background.
+## 5. In-Memory Background Ingestion Queue
+
+* **The Ambiguity**: Parsing dense spreadsheets, calculating carbon factors, and running checks synchronously inside HTTP request threads triggers gateway timeouts and can trigger memory crashes under concurrent loads.
+* **The Decision**: We implemented a lightweight, thread-safe, in-memory sequential queue (`ESGIngestQueueWorker` using standard Python `queue.Queue`). HTTP uploads return `202 Accepted` instantly to the user's browser, offloading parsing tasks to our background worker thread.
 * **The Rationale**:
-  * **Memory Ceiling Protection**: Celery with Redis or RabbitMQ adds significant operational container memory footprints. A thread-safe, in-memory daemon worker runs inside the existing Python process with near-zero overhead, comfortably staying within Render's tight 512MB RAM free-tier budget.
-  * **Race-Condition & DB Lock Avoidance**: Restricting queue processing to a single background worker sequentially eliminates concurrent row-locking disputes and unique deduplication key constraint collisions in the database.
+  * **Protecting Memory Footprints**: Distributed systems like Celery + Redis introduce notable container memory footprints. A thread-safe, in-memory queue worker runs in the same process space with near-zero overhead, staying well within Render's 512MB RAM free budget.
+  * **Lock & Race Condition Immunity**: By limiting ingestion processing to a single sequential background worker, we completely eliminate concurrent database lock collisions and double-ingestion key conflicts.
 
 ---
 
-## 6. Schema-Free Dynamic Metadata Storage (User Assignments)
-* **The Ambiguity**: Analysts require the ability to assign records to specific team members and track custom parameters without breaking structural compatibility or running extensive database schema migrations.
-* **The Decision**: Stored dynamic analyst assignments (`assigned_to`) and metadata changes natively within the existing database `raw_data` JSON column rather than executing a new SQL schema migration.
+## 6. Secure Multi-Tenant Boundaries & BOLA Protection
+
+* **The Ambiguity**: While dynamic tenant lookup successfully isolated data at the query manager level, endpoints accepting raw query parameters (like `?tenant_id=...`) or resource IDs were vulnerable to Insecure Direct Object Reference (IDOR / BOLA) attacks where corporate users could query other tenants' carbon logs.
+* **The Decision**: We implemented strict, active server-side overrides. Any user-supplied query-parameter filter for `tenant_id` is completely discarded for authenticated users. The backend view strictly forces the filter to match their session's dynamic tenant UUID.
 * **The Rationale**:
-  * **Zero Downtime & Risk**: SQL table-altering migrations lock rows and tables in production, creating critical bottlenecks. Using a dynamic, schema-free JSON attribute permits infinite metadata growth with zero migration friction.
-  * **Robust Database Integration**: SQLite and PostgreSQL natively support compiled JSON sub-attribute querying (`raw_data__assigned_to`), allowing the dashboard queue to isolate unassigned vs assigned records instantly.
+  * Active server-side scoping guarantees that a KPMG auditor can **never** query, edit, or delete Tata Motors data.
+  * Extensively decorated all ledger read, write, and export endpoints with standard REST framework `@permission_classes([IsAuthenticated])` filters to block anonymous traffic.
 
 ---
 
-## 7. Sub-Millisecond Read Performance via `LocMemCache`
-* **The Ambiguity**: Ingested ESG ledger records are read-heavy but updated infrequently, yet rendering dynamic dashboards and timelines from deep tables creates recurring CPU database spikes.
-* **The Decision**: Enabled and configured Django's native **local memory caching (`LocMemCache`)** across read-heavy details, modal views, and audit log histories, with automated full-cache invalidations (`cache.clear()`) triggered instantly on any database write.
-* **The Rationale**:
-  * **Zero Operational Cost**: Bypasses external Redis server dependencies and bills, achieving sub-millisecond response times natively within the server's footprint.
-  * **100% Audit fresh consistency**: Invalidation on write guarantees that the carbon ledger and analyst audit trails are always perfectly up-to-date and consistent.
+## 7. Registration Profiles & First/Last Name Alignment
+
+* **The Ambiguity**: Although our React registration form collects the analyst's full name and splits it cleanly into `first_name` and `last_name` parameters, the backend was previously ignoring these fields, causing columns to remain empty (`EMPTY`) in the database.
+* **The Decision**: Hardened the registration `/api/auth/register/` and me profile `/api/auth/me/` views to process, save, and return `first_name` and `last_name` fields.
+* **The Rationale**: Guarantees complete alignment between frontend user profile views and the core Django User table. Makes the platform audit-ready for individual auditor profile tracking.
 
 ---
 
-## 8. Local File-Based Email Backend vs. Production SMTP Relay (Gmail/SendGrid)
-* **The Ambiguity**: The platform supports exporting approved carbon ledger records directly via email to auditors and analysts. We need to decide how emails are sent in the development, testing, and prototype environments without incurring service costs or credential vulnerabilities.
-* **The Decision**: Standardized on Django's native local file-based email backend (`django.core.mail.backends.filebased.EmailBackend`) for the prototype environment, saving all outgoing emails to `sent_emails/` as static files, while using Django's in-memory backend (`django.core.mail.backends.locmem.EmailBackend`) for automated test isolation. We explicitly deferred the integration of live production-level SMTP relays (such as Gmail SMTP or SendGrid APIs).
-* **The Rationale**:
-  * **Environment Isolation & Security**: Using a live Gmail SMTP or third-party relay in prototype and development builds requires storing sensitive passwords, OAuth tokens, or API keys in `.env` files. This exposes credentials to accidental leakage.
-  * **Credential Volatility & Timeout Protection**: Live SMTP servers require real-time TCP handshakes and network routing, which can introduce latency and timeout errors. Additionally, password expirations or 2-Factor Authentication (2FA) changes instantly break the mail pipeline. A local file-based mock requires zero network calls and is 100% immune to external connectivity failures.
-  * **Verification & Auditability**: Outgoing messages are written directly to local disk files in `sent_emails/`. Analysts and developers can inspect the exact headers, body text, and attachments (such as generated CSV/XLSX ledgers) without checking a live inbox.
-  * **Test Isolation**: In the Django test runner suite, all email operations are automatically overridden to an in-memory box (`django.core.mail.outbox`), permitting sub-millisecond assertions without file-system write bottlenecks.
+## 8. Strategic Questions for the Product Manager (PM)
 
----
+In enterprise deployments, we would ask the product team to weigh in on these key workflow design decisions:
 
-## 9. Strategic Questions for the Product Manager (PM)
-In a real-world enterprise deployment, we would ask the PM to clarify the following business requirements:
-
-1. **Emission Factor Recalculation**: If an international grid database (like DEFRA or IEA) updates its historical grid factors, do we retroactively recalculate and rewrite the carbon footprint of past, locked financial years, or do we apply the correction as an adjustment in the current reporting period?
-2. **Boundary Allocation Rule**: When calculating facility emissions, do we apply operational control (100% of emissions of any facility we run) or financial control (emissions prorated by our equity ownership percentage, e.g., 60% of plant emissions)?
-3. **Analyst Coordinates Override**: When an unknown airport code appears (causing the Haversine formula to fail), should the UI expose a master coordinate management screen where an ESG analyst can manually add and save new IATA coordinates to the lookup table?
-4. **Currency Revaluation**: For mixed-currency files (EUR, USD, INR), do we lock in the exchange rate at the transaction's posting date or apply a single, fixed annual conversion index defined by corporate treasury?
+1. **Emission Factor Recalculation**: When a public carbon intensity database (like DEFRA) issues retroactive corrections for past years' grid factors, do we recalculate historical, locked accounting years, or do we apply the correction as an adjustment entry in the current open period?
+2. **Boundary Allocation Rule**: When logging facility emissions, do we adopt operational control (reporting 100% of emissions for any facility we run) or financial control (prorating emissions by equity ownership, e.g., 60% of plant emissions)?
+3. **Analyst Airport Registry Management**: If an unknown airport code is ingested (causing distance calculations to fail), should the UI expose a master coordinate management dashboard where analysts can manually register coordinates into the lookup table?
+4. **Currency Conversions**: For transactions reported in mixed foreign currencies (EUR, USD, INR), do we lock the exchange rate at the transaction's posting date or apply a single, fixed annual conversion index defined by corporate treasury?

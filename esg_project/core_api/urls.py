@@ -27,5 +27,9 @@ urlpatterns = [
     path('auth/token/', views.CustomObtainAuthToken.as_view(), name='obtain_token'),
     path('auth/register/', views.register_user, name='register_user'),
     path('auth/me/', views.user_profile, name='user_profile'),
+    
+    # Public health check pings for cron job wakeup
+    path('ping/', views.health_check, name='health_check'),
+    path('health/', views.health_check, name='health_check'),
 ]
 

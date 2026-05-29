@@ -1212,6 +1212,19 @@ def user_profile(request):
         "is_active": request.user.is_active
     }, status=status.HTTP_200_OK)
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def health_check(request):
+    """
+    Public health check endpoint for keep-alive pings (e.g., from cron-job.org).
+    Returns 200 OK without requiring authentication.
+    """
+    return Response({
+        "status": "healthy",
+        "timestamp": timezone.now().isoformat(),
+        "message": "Keep-alive ping successful."
+    }, status=status.HTTP_200_OK)
+
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def batch_delete(request, pk):
