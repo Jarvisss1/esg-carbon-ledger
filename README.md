@@ -42,40 +42,60 @@ npm run dev
 
 ---
 
-## **2. How to Use the Platform**
+## **2. Ingestion & Normalization Flow**
 
-### **Step 1: Dynamic Workspace Login**
-Our system routes users dynamically to isolated organization sandboxes depending on their email domain suffix during registration:
-* **Public Domains** (e.g., `user@gmail.com`, `user@yahoo.com`): Automatically logged into the shared seeded **`Tata Motors`** development workspace.
-* **Corporate Domains** (e.g., `auditor@kpmg.com`): Automatically provisions and locks the user into a completely isolated, private tenant sandbox (e.g., **`KPMG`** workspace) to prevent any data exposure.
+Enterprise ESG data originates in diverse source formats (ERP dumps, billing sheets, booking APIs) with local headers, temporal overlaps, and varied metrics. Here is how our ingestion pipeline normalizes this data:
 
-### **Step 2: Ingesting Telemetry Data**
-1. Open the web UI at `http://localhost:5173`.
-2. Navigate to the **Upload Data** tab.
-3. Choose a data source category: **SAP ERP (Scope 1/3)**, **Utility Portals (Scope 2)**, or **Corporate Travel TMC (Scope 3)**.
-4. Select a sample file from the `sample_data/` directory and upload it.
-5. Ingestion happens asynchronously via our in-memory queue. The system auto-detects formats and returns standard calculation records immediately.
+```mermaid
+graph TD
+    A[Raw Payload Ingestion / Webhook] --> B[Intelligent Ingestion Format Auto-Detector]
+    B -->|Resolved Parser System| C[core_api/parsers.py]
+    C -->|Semantic Lookup| D[column_resolver.py]
+    C -->|Flexible Timestamps| E[date_parser.py]
+    C -->|Carbon Conversions| F[unit_normalizer.py]
+    D & E & F --> G[Normalized Activity Table]
+    G -->|z-score > 3 / Warnings| H[Auditor/Analyst Review Queue]
+```
+
+### **Core Pipeline Services**
+* **Semantic Column Mapping (`column_resolver.py`)**: Uses fuzzy matching (Levenshtein & Jaro-Winkler) to normalize heterogenous headers (like German abbreviations `MENGE`, `MEINS`, `BUDAT` or custom vendor keys) to canonical ledger terms.
+* **Resilient Temporal Parsing (`date_parser.py`)**: Processes 8 different date formats (including SAP epoch `/Date(1498946400000)/`, dot-separated dates, and ISO-8601), locking inputs into absolute UTC start/end boundaries.
+* **Defensible Carbon Conversions (`unit_normalizer.py`)**: Executes target emission math in unified `kgCO2e`:
+  * *Scope 1*: Volumetric fuels standardized to Liters and calculated via DEFRA 2023 guidelines.
+  * *Scope 2*: Prorates variable time-series utility bills across calendar months, using localized grid intensity indices.
+  * *Scope 3*: Resolves 3-letter IATA airport codes to geospatial coordinates, runs the **Haversine formula**, applies a standard **8% routing uplift**, and scales calculations by Cabin Class weights.
 
 ---
 
-## **3. Using the Sample Data (`sample_data/`)**
+## **3. How to Use the Platform**
+
+### **Step 1: Dynamic Workspace Login**
+Our system routes users dynamically to isolated organization sandboxes depending on their email domain suffix:
+* **Public Domains** (e.g., `@gmail.com`, `@yahoo.com`): Automatically mapped to the shared, pre-populated **`Tata Motors`** developer workspace.
+* **Corporate Domains** (e.g., `@kpmg.com`): Automatically provisions and locks the user into a fully isolated, private tenant sandbox (e.g., **`KPMG`** workspace) to prevent cross-tenant exposure.
+
+### **Step 2: Ingesting Telemetry Data**
+1. Open the UI at `http://localhost:5173` and click the **Upload Data** tab.
+2. Select a sample file from the `sample_data/` directory and upload it.
+3. Ingestion executes asynchronously inside our in-memory sequential queue (`ESGIngestQueueWorker`), avoiding CPU spikes and database row-lock contention. The UI refreshes with normalized metrics instantly!
+
+---
+
+## **4. Using the Sample Data (`sample_data/`)**
 
 We provide pre-validated raw telemetry files in the [sample_data/](file:///c:/PROJECTSSS/esg/sample_data/) directory to demonstrate the ingestion parser capabilities:
 
 ### **A. SAP ERP (`sample_data/sap/`)**
-For direct combustion fuel logs and purchase records:
-* `sap_fuel_consumption.xlsx` — Excel fuel sheet with transactional postings.
+* `sap_fuel_consumption.xlsx` — Volumetric generator diesel issues.
 * `sap_material_document_odata.json` — Deep OData JSON payload representing material documents.
-* `sap_mbgmcr03_idoc.xml` — Legacy XML IDoc containing goods receipt line items.
-* `sap_procurement.csv` / `.idoc` — German-nomenclature spreadsheets utilizing traditional movement tags (`101`, `241`, `313`).
+* `sap_mbgmcr03_idoc.xml` — Legacy XML IDocs.
+* `sap_procurement.csv` / `.idoc` — German-nomenclature spreadsheets using movement keys (`101` for Scope 3 procurement, `241` for Scope 1 issues).
 
 ### **B. Utility Portals (`sample_data/utility/`)**
-For Scope 2 electricity smart-meter files:
 * `utility_electricity_IN.csv` — Time-series intervals mapped to the Indian grid carbon coefficients.
 * `utility_electricity_UK.csv` — Smart-meter interval recordings utilizing the UK grid coefficients.
 
 ### **C. Corporate Travel TMC (`sample_data/travel/`)**
-For Scope 3 air travel, flight hubs, and hotel logs:
 * `travel_concur_itinerary_v4.json` — Concur REST JSON payload detailing flight itineraries.
 * `travel_navan_tmc.json` — Deep TMC travel JSON detailing active trip segments.
-* `travel_corporate.csv` — Flat spreadsheet tracking flight corridors via 3-letter IATA codes.
+* `travel_corporate.csv` — Flight database logs utilizing IATA city codes.
